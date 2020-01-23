@@ -1,8 +1,8 @@
 {
 	"name": "jsonstat-conv",
-	"version": "0.10.7",
+	"version": "1.0.0",
 	"description": "JSON-stat Command Line Conversion Tools",
-	"homepage": "https://github.com/badosa/JSON-stat-conv",
+	"homepage": "https://github.com/jsonstat/conv",
 	"keywords": [
 		"conversion",
 		"util",
@@ -31,13 +31,13 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/badosa/JSON-stat-conv.git"
+		"url": "https://github.com/jsonstat/conv.git"
 	},
 	"license": "Apache-2.0",
 	"dependencies": {
-		"jsonstat": "^0.13.9",
-		"jsonstat-utils": "^2.4.4",
+		"jsonstat-toolkit": "^1.0.8",
+		"jsonstat-suite": "^3.0.3",
 		"rw": "^1.3.3",
-		"yargs": "^6.6.0"
+		"yargs": "^15.1.0"
 	}
 }
