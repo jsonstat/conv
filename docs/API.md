@@ -1,4 +1,4 @@
-#API Reference
+# API Reference
 > [JSON-stat Command Line Conversion Tools](https://github.com/jsonstat/conv/blob/master/README.md) ▸ **API Reference**
 
 ## Shared options
