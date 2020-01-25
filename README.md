@@ -32,7 +32,7 @@ Or using the stream interface:
 curl https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1 | jsonstat2csv > unr.csv -t
 ```
 
-More in the [Examples page](https://github.com/badosa/JSON-stat-conv/wiki/Examples).
+More in the [Examples page](https://github.com/jsonstat/conv/blob/master/docs/EXAMPLES.md).
 
 ## Shared options
 
