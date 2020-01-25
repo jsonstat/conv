@@ -20,7 +20,7 @@ More in the [Installation](https://github.com/jsonstat/conv/blob/master/docs/INS
 * [jsonstatslice (aka jsonstat2jsonstat)](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstatslice-aka-jsonstat2jsonstat) - creates JSON-stat from JSON-stat
 * [sdmx2jsonstat](https://github.com/jsonstat/conv/blob/master/docs/API.md#sdmx2jsonstat) - converts SDMX into JSON-stat
 
-Check the [API Reference] (https://github.com/jsonstat/conv/blob/master/docs/API.md) page for more.
+Check the [API Reference](https://github.com/jsonstat/conv/blob/master/docs/API.md) page for more.
 
 ## Example
 
