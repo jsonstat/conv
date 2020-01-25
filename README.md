@@ -1,6 +1,8 @@
 # JSON-stat Command Line Conversion Tools
 
-Command line tools for converting [JSON-stat](https://json-stat.org) documents.
+The **JSON-stat Command Line Conversion Tools** contain command line tools for converting to and from [JSON-stat](https://json-stat.org/). It supports different JSON flavors, CSV (including [CSV-stat](https://github.com/jsonstat/csv)) and [SDMX-JSON](https://github.com/sdmx-twg/sdmx-json/blob/master/data-message/docs/1-sdmx-json-field-guide.md). It is built upon the [JSON-stat Javascript Toolkit](https://www.npmjs.com/package/jsonstat-toolkit) and the [JSON-stat Javascript Utilities Suite](https://www.npmjs.com/package/jsonstat-suite).
+
+To use these tools, you don't need to be familiar with the **[JSON-stat format](https://json-stat.org/format/)**. For a light introduction to the format, see [JSON-stat, a simple light standard for all kinds of data disseminators](https://www.slideshare.net/badosa/json-stat).
 
 ```
 npm install -g jsonstat-conv
@@ -21,7 +23,7 @@ Available commands:
 Get unemployment rate time series by country from Eurostat and convert it to CSV.
 
 ```
-curl https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1 -o unr.jsonstat
+curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" -o unr.jsonstat
 
 jsonstat2csv unr.jsonstat unr.csv
 ```
@@ -29,7 +31,7 @@ jsonstat2csv unr.jsonstat unr.csv
 Or using the stream interface:
 
 ```
-curl https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1 | jsonstat2csv > unr.csv -t
+curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstat2csv > unr.csv -t
 ```
 
 More in the [Examples page](https://github.com/jsonstat/conv/blob/master/docs/EXAMPLES.md).
