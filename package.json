@@ -1,6 +1,6 @@
 {
 	"name": "jsonstat-conv",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "JSON-stat Command Line Conversion Tools",
 	"homepage": "https://github.com/jsonstat/conv",
 	"keywords": [
@@ -10,7 +10,10 @@
 		"stats",
 		"data",
 		"cube",
-		"opendata"
+		"opendata",
+		"json",
+		"csv",
+		"sdmx"
 	],
 	"bin": {
 		"jsonstat2array": "jsonstat2array",
