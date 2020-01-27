@@ -1,7 +1,7 @@
 var
 	fs=require("fs"),
 	rw=require("rw"),
-	JSONstat=require("jsonstat"),
+	JSONstat=require("jsonstat-toolkit"),
 
 	dataset=function(contents){
 		try{

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var
-	utils=require("jsonstat-utils"),
+	utils=require("jsonstat-suite"),
 	argv=require("yargs")
 		.version()
 		.usage("Usage:\n  $0 [input filename] [output filename]\n  $0 < [input] > [output] -t")
