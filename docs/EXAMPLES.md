@@ -263,13 +263,13 @@ On table [Country Overview by Country and Time](http://w3.unece.org/PXWeb2015/px
 Click on **+ Save your retrieval**, and select *JSON-stat file (JSON)* in the pull-down menu and press **Finish**. You will get a URL (if it is an http URL, edit it to point to https):
 
 ```
-https://w3.unece.org/PXWeb2015/sq/73d8eaed-784e-4a56-a08f-2d71324e0198
+https://w3.unece.org/PXWeb2015/sq/7606161f-5f03-432b-9906-5c1a6e950629
 ```
 
 To download the dataset from the command line, let's run [cURL](https://curl.haxx.se/dlwiz/?type=bin):
 
 ```
-curl https://w3.unece.org/PXWeb2015/sq/73d8eaed-784e-4a56-a08f-2d71324e0198 -o unece.jsonstat
+curl https://w3.unece.org/PXWeb2015/sq/7606161f-5f03-432b-9906-5c1a6e950629 -o unece.jsonstat
 ```
 
 #### 2. Convert JSON-stat to a more popular JSON data structure
@@ -313,13 +313,13 @@ json2csv < unece-comma.json > unece-semi.csv -w ";"
 Comma-delimited CSV with dot as the decimal mark:
 
 ```
-curl https://w3.unece.org/PXWeb2015/sq/73d8eaed-784e-4a56-a08f-2d71324e0198 | jsonstat2arrobj -b Country -d Indicator -l -t | json2csv > unece.csv
+curl https://w3.unece.org/PXWeb2015/sq/7606161f-5f03-432b-9906-5c1a6e950629 | jsonstat2arrobj -b Country -d Indicator -l -t | json2csv > unece.csv
 ```
 
 Semicolon-delimited CSV with comma as the decimal mark:
 
 ```
-curl https://w3.unece.org/PXWeb2015/sq/73d8eaed-784e-4a56-a08f-2d71324e0198 | jsonstat2arrobj -b Country -d Indicator -l -k -t | json2csv > unece-semi.csv -w ";"
+curl https://w3.unece.org/PXWeb2015/sq/7606161f-5f03-432b-9906-5c1a6e950629 | jsonstat2arrobj -b Country -d Indicator -l -k -t | json2csv > unece-semi.csv -w ";"
 ```
 
 ## A Norwegian Example
