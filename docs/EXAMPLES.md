@@ -617,10 +617,10 @@ First we need to convert JSON to [NDJSON](http://ndjson.org/):
 ndjson-split < ie.json > ie.ndjson
 ```
 
-Because we are only interested in data for the latest year (2016 at the time of writing), we need to apply this filtering condition:
+Because we are only interested in data for the latest year (2019 at the time of writing), we need to apply this filtering condition:
 
 ```js
-d.Year==='2016'
+d.Year==='2019'
 ```
 
 We also want to remove the age total (*All ages*) and all the subtotals included in the dataset:
@@ -651,7 +651,7 @@ They are not needed to build a population pyramid. One way to achieve this in Ja
 The resulting filtering command is then:
 
 ```
-ndjson-filter "d.Year==='2016' && ['All ages', '15 years and over', '65 years and over', '0 - 4 years', '0 - 14 years', '15 - 24 years', '25 - 44 years', '45 - 64 years'].indexOf(d['Age Group'])<0" < ie.ndjson > ie-filtered.ndjson
+ndjson-filter "d.Year==='2019' && ['All ages', '15 years and over', '65 years and over', '0 - 4 years', '0 - 14 years', '15 - 24 years', '25 - 44 years', '45 - 64 years'].indexOf(d['Age Group'])<0" < ie.ndjson > ie-filtered.ndjson
 ```
 
 #### 4. Transform data
@@ -701,7 +701,7 @@ Under 1 year,-33.9,32.3
 In a single line:
 
 ```
-curl https://statbank.cso.ie/StatbankServices/StatbankServices.svc/jsonservice/responseinstance/PEA01 | jsonstat2arrobj -d Statistic -b Sex -l -t | ndjson-split | ndjson-filter "d.Year==='2016' && ['All ages', '15 years and over', '65 years and over', '0 - 4 years', '0 - 14 years', '15 - 24 years', '25 - 44 years', '45 - 64 years'].indexOf(d['Age Group'])<0" | ndjson-map "{Age: d['Age Group'], Sex: d.Sex, Male: -1*d.Male, Female: d.Female}" | json2csv -n > ie.csv
+curl https://statbank.cso.ie/StatbankServices/StatbankServices.svc/jsonservice/responseinstance/PEA01 | jsonstat2arrobj -d Statistic -b Sex -l -t | ndjson-split | ndjson-filter "d.Year==='2019' && ['All ages', '15 years and over', '65 years and over', '0 - 4 years', '0 - 14 years', '15 - 24 years', '25 - 44 years', '45 - 64 years'].indexOf(d['Age Group'])<0" | ndjson-map "{Age: d['Age Group'], Sex: d.Sex, Male: -1*d.Male, Female: d.Female}" | json2csv -n > ie.csv
 ```
 
 #### 7. Data visualization
