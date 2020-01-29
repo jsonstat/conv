@@ -10,6 +10,8 @@
 
 Please, read the examples in order: **their requirements are incremental**.
 
+Warning: Data in pictures and sample source code may be different from current data.
+
 ## A Eurostat Example
 
 Let's assume that we must build a spreadsheet table of unemployment rate by country (columns) and year (rows).
@@ -719,7 +721,7 @@ According to the [World Happiness Report 2016 Update](http://worldhappiness.repo
 In this example we will use the tools also shown in the previous ones ([jsonstat-conv](https://npmjs.com/package/jsonstat-conv), [ndjson-cli](https://npmjs.com/package/ndjson-cli)) but we will add a new one to the formula: [ndjson-format](https://www.npmjs.com/package/ndjson-format), a module that allows you to format NDJSON using a [ES2015 template literals](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals).
 
 ```
-npm install -g jsonstat-format
+npm install -g ndjson-format
 ```
 
 ### Steps
