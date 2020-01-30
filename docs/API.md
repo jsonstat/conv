@@ -24,8 +24,18 @@ jsonstat2csv < oecd.json > oecd.csv -t
 Shows jsonstat-conv version.
 
 ```
-jsonstat2csv --version
+jsonstat2jsonstat --version
 ```
+
+## Available commands
+
+* [csv2jsonstat](https://github.com/jsonstat/conv/blob/master/docs/API.md#csv2jsonstat) - converts CSV into JSON-stat
+* [jsonstat2array](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2array) - converts JSON-stat into an array of arrays
+* [jsonstat2arrobj](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2arrobj) - converts JSON-stat into an array of objects
+* [jsonstat2csv](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2csv) - converts JSON-stat into CSV
+* [jsonstat2object](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2object) - converts JSON-stat into an object
+* [jsonstatslice (aka jsonstat2jsonstat)](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstatslice-aka-jsonstat2jsonstat) - creates JSON-stat from JSON-stat
+* [sdmx2jsonstat](https://github.com/jsonstat/conv/blob/master/docs/API.md#sdmx2jsonstat) - converts SDMX into JSON-stat
 
 ## csv2jsonstat
 
