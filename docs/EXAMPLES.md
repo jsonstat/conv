@@ -7,6 +7,7 @@
 * [A Norwegian Example](#a-norwegian-example)
 * [An Irish Example](#an-irish-example)
 * [A Danish Example](#a-danish-example)
+* [An OECD Example](#an-oecd-example)
 
 Please, read the examples in order: **their requirements are incremental**.
 
@@ -84,7 +85,7 @@ jsonstat2csv eurostat.jsonstat eurostat-semi.csv --column ";"
 jsonstat2csv eurostat.jsonstat eurostat-status.csv --status --vlabel rate --slabel symbol
 ```
 
-**jsonstat2csv** also allows you to create a rich CSV document with extra metadata header lines ([CSV-stat](https://github.com/badosa/CSV-stat)).
+**jsonstat2csv** also allows you to create a rich CSV document with extra metadata header lines ([CSV-stat](https://github.com/jsonstat/csv)).
 
 ```
 jsonstat2csv eurostat.jsonstat eurostat.jsv --rich
@@ -811,3 +812,71 @@ On Windows:
 ```
 curl "https://api.statbank.dk/v1/data/LIVO1/JSONSTAT?lang=en&Tid=2010%2C2017&AKTP=*" | jsonstat2arrobj -b Tid -l -d ContentsCode -t | ndjson-split | ndjson-format > dk.txt "${this['2017']>this['2010'] ? '\u2191' : '\u2193'} ${this['AKTP']}: ${this['2017']} (${this['2017']>this['2010'] ? '+' : ''}${(this['2017']-this['2010']).toFixed(1)})"
 ```
+
+## An OECD Example
+
+The OECD does not support JSON-stat: it serves data in the SDMX-JSON format. But jsonstat-conv can convert SDMX-JSON into JSON-stat and benefit from all the tools available for JSON-stat (at the time of writing, they were still very few tools available supporting SDMX-JSON).
+
+In this example, we will be doing several translations.
+
+### Steps
+
+#### 1. Retrieve some key economic indicators from OECD
+
+```
+curl "https://stats.oecd.org/SDMX-JSON/data/KEI/PS+PR+PRINTO01+SL+SLRTTO01+SLRTCR03+OD+ODCNPI03+CI+LO+LOLITOAA+LORSGPRT+LI+LF+LFEMTTTT+LR+LRHUTTTT+LC+LCEAMN01+UL+ULQEUL01+PP+PI+CP+CPALTT01+FI+MA+MABMM301+IR+IRSTCI01+IR3TIB01+IRLTLT01+SP+SPASTT01+CCUSMA02+XT+XTEXVA01+XTIMVA01+BP+B6BLTT02+NA+NAEXKP01+NAEXKP02+NAEXKP03+NAEXKP04+NAEXKP06+NAEXKP07.AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EU28+G-7+OECDE+G-20+OECD+NMEC+ARG+BRA+CHN+COL+IND+IDN+RUS+SAU+ZAF.GP.M/all?startTime=2018-01&endTime=2020-01&dimensionAtObservation=allDimensions" -o kei.sdmx.json
+```
+
+This line of code produces an SDMX-JSON file. The size of _kei.sdmx.json_ is 393 Kb.
+
+#### 2. Convert SDMX-JSON to JSON-stat
+
+**sdmx2jsonstat** can be used to translate SDMX-JSON into JSON-stat.
+
+```
+sdmx2jsonstat kei.sdmx.json default.stat.json
+```
+
+The JSON-stat file is smaller (232 Kb) than the original SDMX-JSON one. An even smaller file can be produced: by default, **sdmx2jsonstat** uses arrays to express values and statuses. JSON-stat supports both arrays and objects for this purpose. Because usually only a few data have status information, it is generally better to use an object for statuses.
+
+**sdmx2jsonstat** supports objects for status information using the _--ostatus_ option (_-s_).
+
+```
+sdmx2jsonstat kei.sdmx.json kei.stat.json -s
+```
+
+The new JSON-stat file is now only 168 Kb: less than half the original SDMX-JSON one.
+
+#### 3. Convert JSON-stat to CSV
+
+Because now we have a regular JSON-stat file, it is trivial to convert it to CSV, a format that can be used to import the data in many tools.
+
+```
+jsonstat2csv kei.stat.json kei.csv
+```
+
+The new file is very big (1,174 Kb) because by default labels, instead of identifiers, are used. **jsonstat2csv** has several options to avoid this. But you don&rsquo;t actually has to choose between labels or identifiers (each serves a different purpose): you can use the ([CSV-stat](https://github.com/jsonstat/csv)) format as the output format: CSV-stat supports the core semantics of JSON-stat using an enriched CSV structure.
+
+You can produce CSV-stat with the _--rich_ option (_-r_):
+
+```
+jsonstat2csv kei.stat.json kei.rich.csv -r
+```
+
+This command produces a 510 Kb file.
+
+#### 4. Back to JSON-stat
+
+```
+csv2jsonstat kei.rich.csv default.json
+```
+
+The size of the new JSON-stat is 231 Kb: it is a little smaller than the original JSON-stat had some extension information that was lost in CSV-stat.
+
+This file can be minimized using objects for statuses, thanks to **jsonstat2jsonstat**:
+
+```
+jsonstat2jsonstat default.json kei.json -m -s
+```
+
+The size of the resulting file is 167 Kb.
