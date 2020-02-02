@@ -206,7 +206,7 @@ jsonstat2arrobj oecd.json oecd-transp.json --by area
 Boolean. Uses labels instead of IDs to identify categories of the transposed dimension, unless --cid has been specified.
 
 ```
-jsonstat2arrobj oecd.json oecd-transp.json --by Country --bylabel
+jsonstat2arrobj oecd.json oecd-transp.json --by area --bylabel
 ```
 
 #### --prefix (-p)
