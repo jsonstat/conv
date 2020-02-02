@@ -883,7 +883,7 @@ The size of the resulting file is 167 Kb.
 
 #### 5. Producing a key economic indicators CSV for a particular country
 
-Assuming you have installed all the modules used in the previous examples, it is very easy to get a CSV file for a particular location from the previous JSON-stat one.
+Assuming you have installed all the modules used in the previous examples, it is very easy to get a CSV file for a particular location from _kei.json_.
 
 First, we transpose the data using **jsonstat2arrobj**, then we convert it into [NDJSON](http://ndjson.org/) with **ndjson-split** and filter the selected location with **ndjson-filter** to finally translate it into CSV with **json2csv**.
 
