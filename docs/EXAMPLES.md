@@ -827,7 +827,7 @@ In this example, we will be doing several translations.
 curl "https://stats.oecd.org/SDMX-JSON/data/KEI/PS+PR+PRINTO01+SL+SLRTTO01+SLRTCR03+OD+ODCNPI03+CI+LO+LOLITOAA+LORSGPRT+LI+LF+LFEMTTTT+LR+LRHUTTTT+LC+LCEAMN01+UL+ULQEUL01+PP+PI+CP+CPALTT01+FI+MA+MABMM301+IR+IRSTCI01+IR3TIB01+IRLTLT01+SP+SPASTT01+CCUSMA02+XT+XTEXVA01+XTIMVA01+BP+B6BLTT02+NA+NAEXKP01+NAEXKP02+NAEXKP03+NAEXKP04+NAEXKP06+NAEXKP07.AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EU28+G-7+OECDE+G-20+OECD+NMEC+ARG+BRA+CHN+COL+IND+IDN+RUS+SAU+ZAF.GP.M/all?startTime=2018-01&endTime=2020-01&dimensionAtObservation=allDimensions" -o kei.sdmx.json
 ```
 
-This line of code produces an SDMX-JSON file. The size of _kei.sdmx.json_ is 393 Kb.
+This line of code produces an SDMX-JSON file with the growth over the previous period of some key economic indicators for several locations. The size of _kei.sdmx.json_ is 393 Kb.
 
 #### 2. Convert SDMX-JSON to JSON-stat
 
@@ -880,3 +880,21 @@ jsonstat2jsonstat default.json kei.json -m -s
 ```
 
 The size of the resulting file is 167 Kb.
+
+#### 5. Producing a key economic indicators CSV for a particular country
+
+Assuming you have installed all the modules used in the previous examples, it is very easy to get a CSV file for a particular location from the previous JSON-stat one.
+
+First, we transpose the data using **jsonstat2arrobj**, then we convert it into [NDJSON](http://ndjson.org/) with **ndjson-split** and filter the selected location with **ndjson-filter** to finally translate it into CSV with **json2csv**.
+
+In the example, we will create a CSV for Canada:
+
+```
+"d['LOCATION']==='Canada'"
+```
+
+but you can choose any location in the original OECD file.
+
+```
+jsonstat2arrobj < kei.json -b SUBJECT -d MEASURE,FREQUENCY -l -t | ndjson-split | ndjson-filter "d['LOCATION']==='Canada'" | json2csv -n > kei-ca.csv
+```
