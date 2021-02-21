@@ -4,10 +4,10 @@ var
 	argv=require("yargs")
 		.version()
 		.usage("Usage:\n  $0 [input filename] [output filename] -f [filter]\n  $0 < [input] > [output] -f [filter] -t")
-		.example("$0 oecd.json oecd-subset.json -f \"area\"=\"BE\",\"DE\";\"year\"=\"2014\",\"2015\"", "converts JSON-stat file oecd.json into a new JSON-stat file (oecd-subset.json).")
-		.example("$0 < oecd.json > oecd-subset.json -f \"area\"=\"BE\",\"DE\";\"year\"=\"2014\",\"2015\" -t", "converts JSON-stat stream oecd.json into a new JSON-stat stream (oecd-subset.json).")
+		.example("$0 oecd.json oecd-subset.json -f area=BE/DE,year=2014/2015, "converts JSON-stat file oecd.json into a new JSON-stat file (oecd-subset.json).")
+		.example("$0 < oecd.json > oecd-subset.json -f area=BE/DE,year=2014/2015 -t", "converts JSON-stat stream oecd.json into a new JSON-stat stream (oecd-subset.json).")
 		.alias("f", "filter")
-		.describe("f", "Filter string (for example: area=BE,DE;year=2014,2015)")
+		.describe("f", "Filter string (for example: area=BE/DE,year=2014/2015)")
 		.boolean("d")
 		.alias("d", "drop")
 		.describe("d", "Filter is an antifilter (drop instead of keep)")
@@ -25,8 +25,6 @@ var
 		.argv
 	,
 	inout=require("./inout"),
-	opt={ stringify: true },
-
 	callback=function(contents){
 		var
 			arrfil,
@@ -43,26 +41,22 @@ var
 				process.exit(1);
 			}
 
-			arrfil=filter.split(";").map(function(e){
+			arrfil=filter.split(",").map(function(e){
 				var arr=e.split("=");
-
-				arr[1]=arr[1].split(",");
-
+				arr[1]=arr[1].split("/");
 				return arr;
 			});
 		}
 
-		if(argv.ovalue){
-			opt.ovalue=true;
-		}
-		if(argv.ostatus){
-			opt.ostatus=true;
-		}
-		if(argv.drop){
-			opt.drop=true;
-		}
-
-		subset=inout.dataset(contents).Dice(arrfil, opt);
+		subset=inout.dataset(contents).Dice(
+			arrfil,
+			{
+				stringify: true,
+				drop: argv.drop,
+				ostatus: argv.ostatus,
+				ovalue: argv.ovalue
+			}
+		);
 
 		if(subset===null){
 			console.error("Error: The input does not containt valid JSON-stat or the filters are not valid.");

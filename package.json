@@ -1,6 +1,6 @@
 {
 	"name": "jsonstat-conv",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "JSON-stat Command Line Conversion Tools",
 	"homepage": "https://github.com/jsonstat/conv",
 	"keywords": [
