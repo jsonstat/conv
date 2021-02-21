@@ -118,7 +118,7 @@ As you probably noticed, the _eurostat.json_ does not have the structure we need
   {
     "unit": "Percentage of active population",
     "sex": "Total",
-    "age": "Total",
+    "age": "From 15 to 74 years",
     "time": "2005",
     "geo": "Austria",
     "value": 5.6
@@ -134,7 +134,7 @@ Instead, we need to have a property for each category of the _geo_ dimension (wh
   {
     "unit": "Percentage of active population",
     "sex": "Total",
-    "age": "Total",
+    "age": "From 15 to 74 years",
     "time": "2005",
     "AT": 5.6,
     "BE": 8.5,
@@ -152,10 +152,10 @@ That is, we need to transpose the values by _geo_:
 jsonstat2arrobj eurostat.jsonstat eurostat-transp.json --by geo
 ```
 
-Dataset **tesem120** contains several single-category dimensions: <strike>_sex_ and _age_ are always "Total" and _unit_ is always "Percentage of active population"</strike>. **Correction**: That was true in the past, but at some point **tesem120** began including data by sex. This could also happen in the future with **age** or even **unit**. Because we are only interested in unemployment as a percentage of active population (PC_ACT) and we don't care about _sex_ or _age_, we need to create a subset of eurostat.jsonstat:
+Because we are only interested in unemployment as a percentage of active population (PC_ACT) and we don't care about _sex_ or _age_, we need to create a subset of eurostat.jsonstat:
 
 ```
-jsonstatslice eurostat.jsonstat eurostat-subset.jsonstat --filter sex=T,age=TOTAL,unit=PC_ACT
+jsonstatslice eurostat.jsonstat eurostat-subset.jsonstat --filter sex=T,age=Y15-74,unit=PC_ACT
 ```
 
 Now that we are sure that _sex_, _age_ and _unit_ are single-category dimensions, we can remove them from the transposed JSON:
@@ -197,7 +197,7 @@ All the process has required three lines and three files (_eurostat.jsonstat_, _
 ```
 curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" -o eurostat.jsonstat
 
-jsonstatslice eurostat.jsonstat eurostat-subset.jsonstat --filter sex=T,age=TOTAL,unit=PC_ACT
+jsonstatslice eurostat.jsonstat eurostat-subset.jsonstat --filter sex=T,age=Y15-74,unit=PC_ACT
 
 jsonstat2arrobj eurostat-subset.jsonstat eurostat-drop.json --by geo --drop sex,age,unit
 
@@ -221,19 +221,19 @@ jsonstat2arrobj < eurostat.jsonstat > eurostat.json --stream
 So to get a comma-delimited CSV with dot as the decimal mark in a single line:
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatslice --filter sex=T,age=TOTAL,unit=PC_ACT --stream | jsonstat2arrobj --by geo --drop sex,age,unit --stream | json2csv > eurostat.csv
+curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatslice --filter sex=T,age=Y15-74,unit=PC_ACT --stream | jsonstat2arrobj --by geo --drop sex,age,unit --stream | json2csv > eurostat.csv
 ```
 
 Or a little shorter:
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatslice -f sex=T,age=TOTAL,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -t | json2csv > eurostat.csv
+curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatslice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -t | json2csv > eurostat.csv
 ```
 
 And to get a semicolon-delimited CSV with comma as the decimal mark:
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatslice -f sex=T,age=TOTAL,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -k -t | json2csv > eurostat-semi.csv -w ";"
+curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatslice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -k -t | json2csv > eurostat-semi.csv -w ";"
 ```
 
 ## A UNECE Example
@@ -480,9 +480,9 @@ json2csv < no-ratio.json > no.csv
 ```
 time,ratio
 2006M02,0.9026666666666667
-2006M03,0.9038718291054739
+2006M03,0.90520694259012
 2006M04,0.90520694259012
-2006M05,0.9054593874833556
+2006M05,0.9067909454061251
 2006M06,0.905710491367862
 2006M07,0.9060846560846562
 ...
@@ -511,7 +511,7 @@ To draw a time series in a line chart, Visual expects that we provide two separa
 ```
 [
   0.9026666666666667,
-  0.9038718291054739,
+  0.90520694259012,
   0.90520694259012,
   ...
 ]
@@ -568,44 +568,44 @@ Let's assume that we must build the population pyramid of Ireland.
 
 #### 1. Retrieve the population by sex from the Central Statistics Office of Ireland
 
-You'll need to find the JSON-stat dataset URL on CSO's Statbank API. Go to
+You'll need to find the JSON-stat dataset URL on CSO's PxStat. Go to
 
-https://www.cso.ie/webserviceclient/DatasetListing.aspx
+https://data.cso.ie/
 
 and then
 
 ```
-People and Society
+Population Estimates
   > Annual Population Estimates
-    > Population Estimates (Persons in April) by Age Group, Sex and Year
+    > PEA01 - Population Estimates (Persons in April)
 ```
 
-[Dataset PEA01](https://www.cso.ie/webserviceclient/DatasetDetails.aspx?id=PEA01) from CSO provides a yearly time series of population by sex. It is available in the JSON-stat format at:
+[Dataset PEA01](https://data.cso.ie/table/PEA01) from CSO provides a yearly time series of population by sex and age group. It is available in the JSON-stat format at:
 
-https://statbank.cso.ie/StatbankServices/StatbankServices.svc/jsonservice/responseinstance/PEA01
+https://ws.cso.ie/public/api.restful/PxStat.Data.Cube_API.ReadDataset/PEA01/JSON-stat/2.0/en
 
 You can view the contents of the dataset at
 
-https://jsonstat.com/explorer/#/https%3A%2F%2Fstatbank.cso.ie%2FStatbankServices%2FStatbankServices.svc%2Fjsonservice%2Fresponseinstance%2FPEA01
+https://jsonstat.com/explorer/#/https%3A%2F%2Fws.cso.ie%2Fpublic%2Fapi.restful%2FPxStat.Data.Cube_API.ReadDataset%2FPEA01%2FJSON-stat%2F2.0%2Fen
 
 To download the dataset from the command line, run [cURL](https://curl.haxx.se/dlwiz/?type=bin):
 
 ```
-curl https://statbank.cso.ie/StatbankServices/StatbankServices.svc/jsonservice/responseinstance/PEA01 -o ie.jsonstat
+curl https://ws.cso.ie/public/api.restful/PxStat.Data.Cube_API.ReadDataset/PEA01/JSON-stat/2.0/en -o ie.jsonstat
 ```
 
 #### 2. Convert JSON-stat to a more popular JSON data structure
 
-In this step, we will convert the JSON-stat file into an array of objects transposing dimension *Sex*. The dataset contains a dimension (*Statistic*) with a single category (*Population Estimates (Persons in April) (Thousand)*): we won't need it. Using **jsonstat2arrobj** like in previous examples:
+In this step, we will convert the JSON-stat file into an array of objects transposing dimension Sex (*C02199V02655*). The dataset contains a dimension (*STATISTIC*) with a single category (*Population Estimates (Persons in April)*): we won't need it. Using **jsonstat2arrobj** like in previous examples:
 
 ```
-jsonstat2arrobj ie.jsonstat ie.json --drop Statistic --by Sex --bylabel
+jsonstat2arrobj ie.jsonstat ie.json --drop STATISTIC --by C02199V02655 --bylabel
 ```
 
 Or using the stream interface:
 
 ```
-jsonstat2arrobj < ie.jsonstat > ie.json --drop Statistic --by Sex --bylabel --stream
+jsonstat2arrobj < ie.jsonstat > ie.json --drop STATISTIC --by C02199V02655 --bylabel --stream
 ```
 
 The only difference between the previous two lines is that in the stream interface *ie.json* will be written even though it already existed while in the non-stream interface a new filename is used to avoid losing the content of an existing file.
@@ -620,13 +620,13 @@ First we need to convert JSON to [NDJSON](http://ndjson.org/):
 ndjson-split < ie.json > ie.ndjson
 ```
 
-Because we are only interested in data for the latest year (2019 at the time of writing), we need to apply this filtering condition:
+Because we are only interested in data for the latest year (2020 at the time of writing), we need to apply this filtering condition:
 
 ```js
-d.Year==='2019'
+d['TLIST(A1)']==='2020'
 ```
 
-We also want to remove the age total (*All ages*) and all the subtotals included in the dataset:
+We also want to remove the age (*C02076V02508*) total (*All ages*) and all the subtotals included in the dataset:
 
 * _15 years and over_
 * _65 years and over_
@@ -648,13 +648,13 @@ They are not needed to build a population pyramid. One way to achieve this in Ja
   '15 - 24 years',
   '25 - 44 years',
   '45 - 64 years'
-].indexOf( d['Age Group'] ) < 0
+].indexOf( d['C02076V02508'] ) < 0
 ```
 
 The resulting filtering command is then:
 
 ```
-ndjson-filter "d.Year==='2019' && ['All ages', '15 years and over', '65 years and over', '0 - 4 years', '0 - 14 years', '15 - 24 years', '25 - 44 years', '45 - 64 years'].indexOf(d['Age Group'])<0" < ie.ndjson > ie-filtered.ndjson
+ndjson-filter "d['TLIST(A1)']==='2020' && ['All ages', '15 years and over', '65 years and over', '0 - 4 years', '0 - 14 years', '15 - 24 years', '25 - 44 years', '45 - 64 years'].indexOf(d['C02076V02508'])<0" < ie.ndjson > ie-filtered.ndjson
 ```
 
 #### 4. Transform data
@@ -662,7 +662,7 @@ ndjson-filter "d.Year==='2019' && ['All ages', '15 years and over', '65 years an
 Many visualization tools do not have pyramids as a type of chart, because they are actually just a special case of a bar chart where the male values have negative values. This is the case of Google Sheets, the tool we are going to use. So the next step is to keep only the information we want and multiply male values by -1.
 
 ```
-ndjson-map "{ Age: d['Age Group'], Sex: d.Sex, Male: -1*d.Male, Female: d.Female }" < ie-filtered.ndjson > ie-pyram.ndjson
+ndjson-map "{ Age: d['C02076V02508'], Sex: d['C02199V02655'], Male: -1*d.Male, Female: d.Female }" < ie-filtered.ndjson > ie-pyram.ndjson
 ```
 
 In the Norwegian example, we used **ndjson-reduce** to go back from NDJSON to JSON.
@@ -691,11 +691,11 @@ We've ended up with a CSV that looks like this:
 
 ```
 Age,Male,Female
-Under 1 year,-33.9,32.3
-1 - 4 years,-148,141.3
-5 - 9 years,-183.8,179.4
-10 - 14 years,-163.4,157.1
-15 - 19 years,-148,140.1
+Under 1 year,-29.9,28.4
+1 - 4 years,-128.3,122.9
+5 - 9 years,-176.3,167.8
+10 - 14 years,-179.4,170.6
+15 - 19 years,-164.7,159.3
 ...
 ```
 
@@ -704,7 +704,7 @@ Under 1 year,-33.9,32.3
 In a single line:
 
 ```
-curl https://statbank.cso.ie/StatbankServices/StatbankServices.svc/jsonservice/responseinstance/PEA01 | jsonstat2arrobj -d Statistic -b Sex -l -t | ndjson-split | ndjson-filter "d.Year==='2019' && ['All ages', '15 years and over', '65 years and over', '0 - 4 years', '0 - 14 years', '15 - 24 years', '25 - 44 years', '45 - 64 years'].indexOf(d['Age Group'])<0" | ndjson-map "{Age: d['Age Group'], Sex: d.Sex, Male: -1*d.Male, Female: d.Female}" | json2csv -n > ie.csv
+curl https://ws.cso.ie/public/api.restful/PxStat.Data.Cube_API.ReadDataset/PEA01/JSON-stat/2.0/en | jsonstat2arrobj -d STATISTIC -b C02199V02655 -l -t | ndjson-split | ndjson-filter "d['TLIST(A1)']==='2020' && ['All ages', '15 years and over', '65 years and over', '0 - 4 years', '0 - 14 years', '15 - 24 years', '25 - 44 years', '45 - 64 years'].indexOf(d['C02076V02508'])<0" | ndjson-map "{Age: d['C02076V02508'], Sex: d['C02199V02655'], Male: -1*d.Male, Female: d.Female}" | json2csv -n > ie.csv
 ```
 
 #### 7. Data visualization
@@ -827,7 +827,7 @@ In this example, we will be doing several translations.
 curl "https://stats.oecd.org/SDMX-JSON/data/KEI/PS+PR+PRINTO01+SL+SLRTTO01+SLRTCR03+OD+ODCNPI03+CI+LO+LOLITOAA+LORSGPRT+LI+LF+LFEMTTTT+LR+LRHUTTTT+LC+LCEAMN01+UL+ULQEUL01+PP+PI+CP+CPALTT01+FI+MA+MABMM301+IR+IRSTCI01+IR3TIB01+IRLTLT01+SP+SPASTT01+CCUSMA02+XT+XTEXVA01+XTIMVA01+BP+B6BLTT02+NA+NAEXKP01+NAEXKP02+NAEXKP03+NAEXKP04+NAEXKP06+NAEXKP07.AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EU28+G-7+OECDE+G-20+OECD+NMEC+ARG+BRA+CHN+COL+IND+IDN+RUS+SAU+ZAF.GP.M/all?startTime=2018-01&endTime=2020-01&dimensionAtObservation=allDimensions" -o kei.sdmx.json
 ```
 
-This line of code produces an SDMX-JSON file with the growth over the previous period of some key economic indicators for several locations. The size of _kei.sdmx.json_ is 393 Kb.
+This line of code produces an SDMX-JSON file with the growth over the previous period of some key economic indicators for several locations. The size of _kei.sdmx.json_ is (at the time of writing) 430 Kb.
 
 #### 2. Convert SDMX-JSON to JSON-stat
 
@@ -837,7 +837,7 @@ This line of code produces an SDMX-JSON file with the growth over the previous p
 sdmx2jsonstat kei.sdmx.json default.stat.json
 ```
 
-The JSON-stat file is smaller (232 Kb) than the original SDMX-JSON one. An even smaller file can be produced: by default, **sdmx2jsonstat** uses arrays to express values and statuses. JSON-stat supports both arrays and objects for this purpose. Because usually only a few data have status information, it is generally better to use an object for statuses.
+The JSON-stat file is smaller (250 Kb) than the original SDMX-JSON one. An even smaller file can be produced: by default, **sdmx2jsonstat** uses arrays to express values and statuses. JSON-stat supports both arrays and objects for this purpose. Because usually only a few data have status information, it is generally better to use an object for statuses.
 
 **sdmx2jsonstat** supports objects for status information using the _--ostatus_ option (_-s_).
 
@@ -845,7 +845,7 @@ The JSON-stat file is smaller (232 Kb) than the original SDMX-JSON one. An even 
 sdmx2jsonstat kei.sdmx.json kei.stat.json -s
 ```
 
-The new JSON-stat file is now only 168 Kb: less than half the original SDMX-JSON one.
+The new JSON-stat file is now only 181 Kb: less than half the original SDMX-JSON one.
 
 #### 3. Convert JSON-stat to CSV
 
@@ -855,7 +855,7 @@ Because now we have a regular JSON-stat file, it is trivial to convert it to CSV
 jsonstat2csv kei.stat.json kei.csv
 ```
 
-The new file is very big (1,174 Kb) because by default labels, instead of identifiers, are used. **jsonstat2csv** has several options to avoid this. But you don&rsquo;t actually has to choose between labels or identifiers (each serves a different purpose): you can use the ([CSV-stat](https://github.com/jsonstat/csv)) format as the output format: CSV-stat supports the core semantics of JSON-stat using an enriched CSV structure.
+The new file is very big (1,3 Mb) because by default labels, instead of identifiers, are used. **jsonstat2csv** has several options to avoid this. But you don&rsquo;t actually has to choose between labels or identifiers (each serves a different purpose): you can use the ([CSV-stat](https://github.com/jsonstat/csv)) format as the output format: CSV-stat supports the core semantics of JSON-stat using an enriched CSV structure.
 
 You can produce CSV-stat with the _--rich_ option (_-r_):
 
@@ -863,7 +863,7 @@ You can produce CSV-stat with the _--rich_ option (_-r_):
 jsonstat2csv kei.stat.json kei.rich.csv -r
 ```
 
-This command produces a 510 Kb file.
+This command produces a 547 Kb file.
 
 #### 4. Back to JSON-stat
 
@@ -871,7 +871,7 @@ This command produces a 510 Kb file.
 csv2jsonstat kei.rich.csv default.json
 ```
 
-The size of the new JSON-stat is 231 Kb: it is a little smaller than the original JSON-stat had some extension information that was lost in CSV-stat.
+The size of the new JSON-stat is 241 Kb: it is a little smaller than the original JSON-stat had some extension information that was lost in CSV-stat.
 
 This file can be minimized using objects for statuses, thanks to **jsonstat2jsonstat**:
 
@@ -879,7 +879,7 @@ This file can be minimized using objects for statuses, thanks to **jsonstat2json
 jsonstat2jsonstat default.json kei.json -m -s
 ```
 
-The size of the resulting file is 167 Kb.
+The size of the resulting file is 181 Kb.
 
 #### 5. Producing a key economic indicators CSV for a particular country
 
