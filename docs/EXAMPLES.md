@@ -155,7 +155,7 @@ jsonstat2arrobj eurostat.jsonstat eurostat-transp.json --by geo
 Because we are only interested in unemployment as a percentage of active population (PC_ACT) and we don't care about _sex_ or _age_, we need to create a subset of eurostat.jsonstat:
 
 ```
-jsonstatslice eurostat.jsonstat eurostat-subset.jsonstat --filter sex=T,age=Y15-74,unit=PC_ACT
+jsonstatdice eurostat.jsonstat eurostat-subset.jsonstat --filter sex=T,age=Y15-74,unit=PC_ACT
 ```
 
 Now that we are sure that _sex_, _age_ and _unit_ are single-category dimensions, we can remove them from the transposed JSON:
@@ -197,7 +197,7 @@ All the process has required three lines and three files (_eurostat.jsonstat_, _
 ```
 curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" -o eurostat.jsonstat
 
-jsonstatslice eurostat.jsonstat eurostat-subset.jsonstat --filter sex=T,age=Y15-74,unit=PC_ACT
+jsonstatdice eurostat.jsonstat eurostat-subset.jsonstat --filter sex=T,age=Y15-74,unit=PC_ACT
 
 jsonstat2arrobj eurostat-subset.jsonstat eurostat-drop.json --by geo --drop sex,age,unit
 
@@ -221,19 +221,19 @@ jsonstat2arrobj < eurostat.jsonstat > eurostat.json --stream
 So to get a comma-delimited CSV with dot as the decimal mark in a single line:
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatslice --filter sex=T,age=Y15-74,unit=PC_ACT --stream | jsonstat2arrobj --by geo --drop sex,age,unit --stream | json2csv > eurostat.csv
+curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatdice --filter sex=T,age=Y15-74,unit=PC_ACT --stream | jsonstat2arrobj --by geo --drop sex,age,unit --stream | json2csv > eurostat.csv
 ```
 
 Or a little shorter:
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatslice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -t | json2csv > eurostat.csv
+curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatdice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -t | json2csv > eurostat.csv
 ```
 
 And to get a semicolon-delimited CSV with comma as the decimal mark:
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatslice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -k -t | json2csv > eurostat-semi.csv -w ";"
+curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatdice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -k -t | json2csv > eurostat-semi.csv -w ";"
 ```
 
 ## A UNECE Example
@@ -355,10 +355,10 @@ curl "http://data.ssb.no/api/v0/dataset/1054.json?lang=en" -o no.jsonstat
 
 #### 2. Filter data
 
-The dataset is big because it contains many indicators available by sex and age (besides time). Because we are going to calculate our ratio using the "Labour force in per cent of the population (seasonally adjusted)" (*ArbstyrkP1*), we don't really need any other categories of the *ContentsCode* dimension. And because we are not going to compute results by age (*Alder*), we just need to keep the *15-74* category. Creating a JSON-stat subset is easy with **jsonstatslice**.
+The dataset is big because it contains many indicators available by sex and age (besides time). Because we are going to calculate our ratio using the "Labour force in per cent of the population (seasonally adjusted)" (*ArbstyrkP1*), we don't really need any other categories of the *ContentsCode* dimension. And because we are not going to compute results by age (*Alder*), we just need to keep the *15-74* category. Creating a JSON-stat subset is easy with **jsonstatdice**.
 
 ```
-jsonstatslice no.jsonstat no-subset.jsonstat --filter ContentsCode=ArbstyrkP1,Alder=15-74
+jsonstatdice no.jsonstat no-subset.jsonstat --filter ContentsCode=ArbstyrkP1,Alder=15-74
 ```
 
 #### 3. Convert JSON-stat to a more popular JSON data structure
@@ -493,7 +493,7 @@ time,ratio
 In a single line:
 
 ```
-curl "http://data.ssb.no/api/v0/dataset/1054.json?lang=en" | jsonstatslice -f ContentsCode=ArbstyrkP1,Alder=15-74 -t | jsonstat2arrobj -b Kjonn -c -t | ndjson-split | ndjson-filter "d['0']!==null" | ndjson-map "{time: d.Tid, ratio: d['2']/d['1']}" | ndjson-reduce | json2csv > no.csv
+curl "http://data.ssb.no/api/v0/dataset/1054.json?lang=en" | jsonstatdice -f ContentsCode=ArbstyrkP1,Alder=15-74 -t | jsonstat2arrobj -b Kjonn -c -t | ndjson-split | ndjson-filter "d['0']!==null" | ndjson-map "{time: d.Tid, ratio: d['2']/d['1']}" | ndjson-reduce | json2csv > no.csv
 ```
 
 #### 8. Data visualization
@@ -594,75 +594,63 @@ To download the dataset from the command line, run [cURL](https://curl.haxx.se/d
 curl https://ws.cso.ie/public/api.restful/PxStat.Data.Cube_API.ReadDataset/PEA01/JSON-stat/2.0/en -o ie.jsonstat
 ```
 
-#### 2. Convert JSON-stat to a more popular JSON data structure
+#### 2. Filter data
 
-In this step, we will convert the JSON-stat file into an array of objects transposing dimension Sex (*C02199V02655*). The dataset contains a dimension (*STATISTIC*) with a single category (*Population Estimates (Persons in April)*): we won't need it. Using **jsonstat2arrobj** like in previous examples:
+Many of the categories in the age dimension (*C02076V02508*) in the dataset are not needed to build a population pyramid:
+
+* _All ages_ (-)
+* _15 years and over_ (320)
+* _65 years and over_ (575)
+* _0 - 4 years_ (205)
+* _0 - 14 years_ (215)
+* _15 - 24 years_ (310)
+* _25 - 44 years_ (420)
+* _45 - 64 years_ (505)
+
+We need to drop them. In the sex dimension (*C02199V02655*), the total (*-*) is not required either. We can use **jsonstatdice** to drop categories and create a subset of the original dataset:
 
 ```
-jsonstat2arrobj ie.jsonstat ie.json --drop STATISTIC --by C02199V02655 --bylabel
+jsonstatdice ie.jsonstat ie-drop.jsonstat --filter C02076V02508=-/320/575/205/215/310/420/505,C02199V02655=- --drop
 ```
 
 Or using the stream interface:
 
 ```
-jsonstat2arrobj < ie.jsonstat > ie.json --drop STATISTIC --by C02199V02655 --bylabel --stream
+jsonstatdice < ie.jsonstat > ie-drop.jsonstat --filter C02076V02508=-/320/575/205/215/310/420/505,C02199V02655=- --drop --stream
 ```
 
-The only difference between the previous two lines is that in the stream interface *ie.json* will be written even though it already existed while in the non-stream interface a new filename is used to avoid losing the content of an existing file.
+The only difference between the previous two lines is that in the stream interface *ie-drop.jsonstat* will be written even though it already exists while in the non-stream interface a new filename is used to avoid losing the content of an existing file.
 
-#### 3. Filter data
+Because we are only interested in data for the latest year (2020 at the time of writing), we need to apply a new filter and only keep category *2020* in dimension *TLIST(A1)*:
 
-To filter data we need to be able to process the JSON output, element by element in the array. As in the Norwegian example, we will be using [ndjson-cli](https://npmjs.com/package/ndjson-cli) for this.
+```
+jsonstatdice < ie-drop.jsonstat > ie-filtered.jsonstat -filter "TLIST(A1)"=2020 --stream
+```
 
-First we need to convert JSON to [NDJSON](http://ndjson.org/):
+#### 3. Convert JSON-stat to a more popular JSON data structure
+
+In this step, we will convert the JSON-stat file into an array of objects transposing the sex dimension (*C02199V02655*). The dataset contains a dimension (*STATISTIC*) with a single category (*Population Estimates (Persons in April)*): we won't need it. Using **jsonstat2arrobj** like in previous examples:
+
+```
+jsonstat2arrobj < ie-filtered.jsonstat > ie.json --drop STATISTIC --by C02199V02655 --bylabel --stream
+```
+
+#### 4. Transform data
+
+Many visualization tools do not have pyramids as a type of chart, because they are actually just a special case of a bar chart where the male values have negative values. This is the case of Google Sheets, the tool we are going to use. So the next step is to multiply male values by -1.
+
+To accomplish this, we need to be able to process the JSON output, element by element in the array. As in the Norwegian example, we will use [ndjson-cli](https://npmjs.com/package/ndjson-cli).
+
+First we need to convert JSON to NDJSON:
 
 ```
 ndjson-split < ie.json > ie.ndjson
 ```
 
-Because we are only interested in data for the latest year (2020 at the time of writing), we need to apply this filtering condition:
-
-```js
-d['TLIST(A1)']==='2020'
-```
-
-We also want to remove the age (*C02076V02508*) total (*All ages*) and all the subtotals included in the dataset:
-
-* _15 years and over_
-* _65 years and over_
-* _0 - 4 years_
-* _0 - 14 years_
-* _15 - 24 years_
-* _25 - 44 years_
-* _45 - 64 years_
-
-They are not needed to build a population pyramid. One way to achieve this in JavaScript is:
-
-```js
-[
-  'All ages',
-  '15 years and over',
-  '65 years and over',
-  '0 - 4 years',
-  '0 - 14 years',
-  '15 - 24 years',
-  '25 - 44 years',
-  '45 - 64 years'
-].indexOf( d['C02076V02508'] ) < 0
-```
-
-The resulting filtering command is then:
+Then we need to multiply the male values by -1:
 
 ```
-ndjson-filter "d['TLIST(A1)']==='2020' && ['All ages', '15 years and over', '65 years and over', '0 - 4 years', '0 - 14 years', '15 - 24 years', '25 - 44 years', '45 - 64 years'].indexOf(d['C02076V02508'])<0" < ie.ndjson > ie-filtered.ndjson
-```
-
-#### 4. Transform data
-
-Many visualization tools do not have pyramids as a type of chart, because they are actually just a special case of a bar chart where the male values have negative values. This is the case of Google Sheets, the tool we are going to use. So the next step is to keep only the information we want and multiply male values by -1.
-
-```
-ndjson-map "{ Age: d['C02076V02508'], Sex: d['C02199V02655'], Male: -1*d.Male, Female: d.Female }" < ie-filtered.ndjson > ie-pyram.ndjson
+ndjson-map "{ Age: d['C02076V02508'], Sex: d['C02199V02655'], Male: -1*d.Male, Female: d.Female }" < ie.ndjson > ie-pyram.ndjson
 ```
 
 In the Norwegian example, we used **ndjson-reduce** to go back from NDJSON to JSON.
@@ -704,7 +692,7 @@ Under 1 year,-29.9,28.4
 In a single line:
 
 ```
-curl https://ws.cso.ie/public/api.restful/PxStat.Data.Cube_API.ReadDataset/PEA01/JSON-stat/2.0/en | jsonstat2arrobj -d STATISTIC -b C02199V02655 -l -t | ndjson-split | ndjson-filter "d['TLIST(A1)']==='2020' && ['All ages', '15 years and over', '65 years and over', '0 - 4 years', '0 - 14 years', '15 - 24 years', '25 - 44 years', '45 - 64 years'].indexOf(d['C02076V02508'])<0" | ndjson-map "{Age: d['C02076V02508'], Sex: d['C02199V02655'], Male: -1*d.Male, Female: d.Female}" | json2csv -n > ie.csv
+curl https://ws.cso.ie/public/api.restful/PxStat.Data.Cube_API.ReadDataset/PEA01/JSON-stat/2.0/en | jsonstatdice -f C02076V02508=-/320/575/205/215/310/420/505,C02199V02655=- -d -t | jsonstatdice -f "TLIST(A1)"=2020 -t | jsonstat2arrobj -d STATISTIC -b C02199V02655 -l -t | ndjson-split | ndjson-map "{ Age: d['C02076V02508'], Sex: d['C02199V02655'], Male: -1*d.Male, Female: d.Female }" | json2csv -n > ie.csv
 ```
 
 #### 7. Data visualization

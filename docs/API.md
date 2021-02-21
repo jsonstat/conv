@@ -24,7 +24,7 @@ jsonstat2csv < oecd.json > oecd.csv -t
 Shows jsonstat-conv version.
 
 ```
-jsonstat2jsonstat --version
+jsonstatslice --version
 ```
 
 ## Available commands
@@ -34,7 +34,8 @@ jsonstat2jsonstat --version
 * [jsonstat2arrobj](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2arrobj) - converts JSON-stat into an array of objects
 * [jsonstat2csv](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2csv) - converts JSON-stat into CSV
 * [jsonstat2object](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2object) - converts JSON-stat into an object
-* [jsonstatslice (aka jsonstat2jsonstat)](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstatslice-aka-jsonstat2jsonstat) - creates JSON-stat from JSON-stat
+* [jsonstatslice](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstatslice) (deprecated) - creates JSON-stat from JSON-stat
+* [jsonstatdice](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstatdice) - creates JSON-stat from JSON-stat
 * [sdmx2jsonstat](https://github.com/jsonstat/conv/blob/master/docs/API.md#sdmx2jsonstat) - converts SDMX into JSON-stat
 
 ## csv2jsonstat
@@ -339,9 +340,11 @@ Boolean. Identifies categories by ID instead of label.
 jsonstat2object oecd.json oecd-object.json --cid
 ```
 
-## jsonstatslice (aka jsonstat2jsonstat)
+## jsonstatslice
 
-Creates JSON-stat from JSON-stat. It can be used to convert old JSON-stat to JSON-stat version 2.0. Because it supports a filter parameter, it can also be used to creates a JSON-stat subset from a JSON-stat dataset. A JSON-stat subset has the same dimensions as the original dataset but with some of them fixed for a certain category.
+Deprecated: use jsonstatdice instead.
+
+Creates JSON-stat from JSON-stat. It can be used to convert old JSON-stat to JSON-stat version 2.0. Because it supports a filter parameter, it can also be used to create a JSON-stat subset from a JSON-stat dataset. A JSON-stat subset produced by jsonstatslice has the same dimensions as the original dataset but with some of them fixed for a certain category.
 
 ```
 jsonstatslice oecd.json oecd-subset.json -f area=DE,year=2014
@@ -354,10 +357,10 @@ In the previous example, oecd-subset.json only contains data for Germany in 2014
 String. Specifies a filter. When no filter is specified, the original JSON-stat will be returned unless it was not JSON-stat 2.0: in such case, it will be updated to version 2.0.
 
 ```
-jsonstat2jsonstat jsonstat10.json jsonstat20.json
+jsonstatslice jsonstat10.json jsonstat20.json
 ```
 
-A filter is a comma-separated list of selection criteria. Each criterion must follow the pattern *{dimension id}={category id}*. Because dimension ids and category ids are strings that can contain whitespaces, they should be double-quoted.
+A filter is a comma-separated list of selection criteria. Each criterion must follow the pattern *{dimension id}={category id}*. Because dimension ids and category ids are strings that can contain whitespaces, they should be double-quoted. For example,
 
 ```
 "area"="DE","year"="2014"
@@ -380,6 +383,55 @@ Boolean. When **--modify** is set, it includes a "value" property of type object
 #### --ostatus (-s)
 
 Boolean. When status information is available and **--modify** is set, includes a "status" property of type object instead of array. When **--modify** is set and **--ostatus** is not, it includes a "value" property of type array.
+
+## jsonstatdice
+
+Creates JSON-stat from JSON-stat. It can be used to convert old JSON-stat to JSON-stat version 2.0. Because it supports a filter parameter, it can also be used to create a JSON-stat subset from a JSON-stat dataset. A JSON-stat subset has the same dimensions as the original dataset but with only a selection of the original dimension categories.
+
+```
+jsonstatdice oecd.json oecd-subset.json -f area=BE/DE,year=2013/2014
+```
+
+In the previous example, oecd-subset.json only contains data for Belgium and Germany and years 2013 and 2014.
+
+#### --filter (-f)
+
+String. Specifies a filter. When no filter is specified, the original JSON-stat will be returned unless it was not JSON-stat 2.0: in such case, it will be updated to version 2.0.
+
+```
+jsonstatdice jsonstat10.json jsonstat20.json
+```
+
+A filter is a comma-separated list of selection criteria. Each criterion must follow the pattern *{dimension id}={category ids}* where *{category ids}* is a list of category ids separated by "/". Because dimension ids and category ids are strings that can contain whitespaces, they should be double-quoted. For example,
+
+```
+"area"="BE"/"DE","year"="2013"/"2014"
+```
+
+forces the subset to keep only categories "BE" and "DE" from dimension "area" and categories "2013" and "2014" from dimension "year". Because these ids do not contain whitespaces, double quotes are not strictly necessary.
+
+```
+jsonstatdice oecd.json oecd-subset.json -f area=BE/DE,year=2013/2014
+```
+
+#### --drop (-d)
+
+Filters are considered positive statements: they state what should be kept in the dataset. Use **--drop** if the specified filter must be read negatively.
+
+For example, to keep all areas but Belgium and Germany and all years but 2013 and 2014, type:
+
+```
+jsonstatdice oecd.json oecd-subset.json -f area=BE/DE,year=2013/2014 -d
+```
+
+#### --ovalue (-o)
+
+Boolean. By default, the returned dataset includes an array property for "value". Use **--ovalue** to get a "value" object instead of an array.
+
+#### --ostatus (-s)
+
+Boolean. By default, the returned dataset includes an array property for "status". Use **--ovalue** to get a "status" object instead of an array. This is recommended because it usually means a smaller file (usually status is only set for some values).
+
 
 ## sdmx2jsonstat
 
