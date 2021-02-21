@@ -4,7 +4,7 @@ var
 	argv=require("yargs")
 		.version()
 		.usage("Usage:\n  $0 [input filename] [output filename] -f [filter]\n  $0 < [input] > [output] -f [filter] -t")
-		.example("$0 oecd.json oecd-subset.json -f area=BE/DE,year=2014/2015, "converts JSON-stat file oecd.json into a new JSON-stat file (oecd-subset.json).")
+		.example("$0 oecd.json oecd-subset.json -f area=BE/DE,year=2014/2015", "converts JSON-stat file oecd.json into a new JSON-stat file (oecd-subset.json).")
 		.example("$0 < oecd.json > oecd-subset.json -f area=BE/DE,year=2014/2015 -t", "converts JSON-stat stream oecd.json into a new JSON-stat stream (oecd-subset.json).")
 		.alias("f", "filter")
 		.describe("f", "Filter string (for example: area=BE/DE,year=2014/2015)")
