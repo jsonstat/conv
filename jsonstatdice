@@ -1,0 +1,76 @@
+#!/usr/bin/env node
+
+var
+	argv=require("yargs")
+		.version()
+		.usage("Usage:\n  $0 [input filename] [output filename] -f [filter]\n  $0 < [input] > [output] -f [filter] -t")
+		.example("$0 oecd.json oecd-subset.json -f \"area\"=\"BE\",\"DE\";\"year\"=\"2014\",\"2015\"", "converts JSON-stat file oecd.json into a new JSON-stat file (oecd-subset.json).")
+		.example("$0 < oecd.json > oecd-subset.json -f \"area\"=\"BE\",\"DE\";\"year\"=\"2014\",\"2015\" -t", "converts JSON-stat stream oecd.json into a new JSON-stat stream (oecd-subset.json).")
+		.alias("f", "filter")
+		.describe("f", "Filter string (for example: area=BE,DE;year=2014,2015)")
+		.boolean("d")
+		.alias("d", "drop")
+		.describe("d", "Filter is an antifilter (drop instead of keep)")
+		.boolean("o")
+		.alias("o", "ovalue")
+		.describe("o", "Type of value: object instead of array")
+		.boolean("s")
+		.alias("s", "ostatus")
+		.describe("s", "Type of status: object instead of array")
+		.boolean("t")
+		.alias("t", "stream")
+		.describe("t", "Enable the stream interface")
+		.help("h")
+		.alias("h", "help")
+		.argv
+	,
+	inout=require("./inout"),
+	opt={ stringify: true },
+
+	callback=function(contents){
+		var
+			arrfil,
+			subset,
+			filter=argv.filter
+		;
+
+		//filter is not required: if not specified (no -f or -f without string) don't slice
+		if(!filter || filter===true){
+			arrfil=null;
+		}else{
+			if(filter.indexOf("=")===-1){
+				console.error("Error: The filter has not been specified correctly (missing =).");
+				process.exit(1);
+			}
+
+			arrfil=filter.split(";").map(function(e){
+				var arr=e.split("=");
+
+				arr[1]=arr[1].split(",");
+
+				return arr;
+			});
+		}
+
+		if(argv.ovalue){
+			opt.ovalue=true;
+		}
+		if(argv.ostatus){
+			opt.ostatus=true;
+		}
+		if(argv.drop){
+			opt.drop=true;
+		}
+
+		subset=inout.dataset(contents).Dice(arrfil, opt);
+
+		if(subset===null){
+			console.error("Error: The input does not containt valid JSON-stat or the filters are not valid.");
+			process.exit(1);
+		}else{
+			return subset;
+		}
+	}
+;
+
+inout.main(argv, callback, true);
