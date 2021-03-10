@@ -250,7 +250,7 @@ String. Specifies the label of the value field. Default is "Value".
 jsonstat2csv oecd.json oecd.csv --vlabel val
 ```
 
-#### --slabel (l)
+#### --slabel (-l)
 
 String. Specifies the label of the status field. Default is "Status".
 
