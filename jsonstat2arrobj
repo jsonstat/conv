@@ -9,6 +9,13 @@ var
 		.boolean("s")
 		.alias("s", "status")
 		.describe("s", "Include status information")
+		.alias("v", "vlabel")
+		.describe("v", "Label of the value field (default is 'Value')")
+		.alias("l", "slabel")
+		.describe("l", "Label of the status field (default is 'Status')")
+		.boolean("f")
+		.alias("f", "fid")
+		.describe("f", "Identify dimensions, value and status by ID instead of label")
 		.boolean("c")
 		.alias("c", "cid")
 		.describe("c", "Identify categories by ID instead of label")
@@ -43,8 +50,11 @@ var
 		var
 			tbl=inout.dataset(contents).toTable({
 				type: "arrobj",
+				vlabel: argv.vlabel,
+				slabel: argv.slabel,
 				status: argv.status,
 				content: argv.cid ? "id": "label",
+				field: argv.fid ? "id": "label",
 				unit: argv.unit,
 				meta: argv.meta,
 				by: argv.by,

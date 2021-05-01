@@ -162,6 +162,30 @@ Boolean. Includes status information.
 jsonstat2arrobj oecd.json oecd-arrobj.json --status
 ```
 
+#### --vlabel (-v)
+
+String. Specifies the label of the value field. Default is "Value".
+
+```
+jsonstat2arrobj oecd.json oecd-arrobj.json --vlabel val
+```
+
+#### --slabel (-l)
+
+String. Specifies the label of the status field. Default is "Status".
+
+```
+jsonstat2arrobj oecd.json oecd-arrobj.json --status --slabel stat
+```
+
+#### --fid (-f)
+
+Boolean. Identifies dimensions, value and status by ID instead of label.
+
+```
+jsonstat2arrobj oecd.json oecd-arrobj.json --fid
+```
+
 #### --cid (-c)
 
 Boolean. Identifies categories by ID instead of label.

@@ -859,7 +859,7 @@ This command produces a 547 Kb file.
 csv2jsonstat kei.rich.csv default.json
 ```
 
-The size of the new JSON-stat is 241 Kb: it is a little smaller than the original JSON-stat had some extension information that was lost in CSV-stat.
+The size of the new JSON-stat is 241 Kb: it is a little smaller than the original JSON-stat because this one had some extension information that was lost in CSV-stat.
 
 This file can be minimized using objects for statuses, thanks to **jsonstat2jsonstat**:
 
