@@ -170,7 +170,7 @@ String. Specifies the label of the value field. Default is "Value".
 jsonstat2arrobj oecd.json oecd-arrobj.json --vlabel val
 ```
 
-#### --slabel (-l)
+#### --slabel (-a)
 
 String. Specifies the label of the status field. Default is "Status".
 
@@ -178,9 +178,9 @@ String. Specifies the label of the status field. Default is "Status".
 jsonstat2arrobj oecd.json oecd-arrobj.json --status --slabel stat
 ```
 
-#### --fid (-f)
+#### --flabel (-f)
 
-Boolean. Identifies dimensions, value and status by ID instead of label.
+Boolean. Identifies dimensions, value and status by label instead of ID.
 
 ```
 jsonstat2arrobj oecd.json oecd-arrobj.json --fid

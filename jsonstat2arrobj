@@ -11,11 +11,11 @@ var
 		.describe("s", "Include status information")
 		.alias("v", "vlabel")
 		.describe("v", "Label of the value field (default is 'Value')")
-		.alias("l", "slabel")
-		.describe("l", "Label of the status field (default is 'Status')")
+		.alias("a", "slabel")
+		.describe("a", "Label of the status field (default is 'Status')")
 		.boolean("f")
-		.alias("f", "fid")
-		.describe("f", "Identify dimensions, value and status by ID instead of label")
+		.alias("f", "flabel")
+		.describe("f", "Identify dimensions, value and status by label instead of ID")
 		.boolean("c")
 		.alias("c", "cid")
 		.describe("c", "Identify categories by ID instead of label")
@@ -54,7 +54,7 @@ var
 				slabel: argv.slabel,
 				status: argv.status,
 				content: argv.cid ? "id": "label",
-				field: argv.fid ? "id": "label",
+				field: argv.flabel ? "label": "id",
 				unit: argv.unit,
 				meta: argv.meta,
 				by: argv.by,
