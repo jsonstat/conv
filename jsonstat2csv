@@ -39,6 +39,7 @@ var
 			csv=utils.toCSV(
 				inout.dataset(contents),
 				{
+					array: argv.stream ? false : true, //big datasets experimentally when interface is not stream (weird)
 					rich: argv.rich,
 					status: argv.status,
 					vlabel: argv.vlabel,

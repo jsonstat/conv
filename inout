@@ -4,8 +4,10 @@ var
 	JSONstat=require("jsonstat-toolkit"),
 
 	dataset=function(contents){
+		var json;
+
 		try{
-			var json=JSON.parse(contents);
+			json=JSON.parse(contents);
 		}catch (e){
 			console.error("Error: The input does not containt JSON.");
 			process.exit(1);
@@ -66,9 +68,16 @@ var
 						console.log("Warning: Using " + output + " instead.");
 					}
 
-					if(fs.writeFileSync(output, content, "utf8")===false){
-						console.error("Error: Couldn't create " + output + ".");
-						process.exit(1);
+					//So far, only in the non-stream interface...
+					if(Array.isArray(content)){
+						content.forEach(function(item){
+							fs.writeFileSync(output, item+"\n", { flag: "a+" });
+						});
+					}else{
+						if(fs.writeFileSync(output, content, "utf8")===false){
+							console.error("Error: Couldn't create " + output + ".");
+							process.exit(1);
+						}
 					}
 
 					console.log("Success: " + output + " has been created.");
