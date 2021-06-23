@@ -25,6 +25,9 @@ var
 		.describe("v", "Label of the value field (default is 'Value')")
 		.alias("l", "slabel")
 		.describe("l", "Label of the status field (default is 'Status')")
+		.boolean("b")
+		.alias("b", "big")
+		.describe("b", "This is an emergency option only to be used when the stream interface is not enabled and the dataset is very big.")
 		.boolean("t")
 		.alias("t", "stream")
 		.describe("t", "Enable the stream interface")
@@ -39,7 +42,7 @@ var
 			csv=utils.toCSV(
 				inout.dataset(contents),
 				{
-					array: argv.stream ? false : true, //big datasets experimentally when interface is not stream (weird)
+					array: !argv.stream && argv.big, //big datasets experimentally when interface is not stream
 					rich: argv.rich,
 					status: argv.status,
 					vlabel: argv.vlabel,

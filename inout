@@ -53,7 +53,7 @@ var
 			//arguments
 			var
 				input=argv._[0],
-				out=function(output, content){
+				out=function(output, content, big){
 					if(fs.existsSync(output)){
 						console.log("Warning: " + output + " already exists.");
 
@@ -69,10 +69,15 @@ var
 					}
 
 					//So far, only in the non-stream interface...
-					if(Array.isArray(content)){
-						content.forEach(function(item){
-							fs.writeFileSync(output, item+"\n", { flag: "a+" });
-						});
+					if(big && Array.isArray(content)){
+						var
+							half=Math.ceil(content.length/2),
+							first=content.slice(0, half),
+							second=content.slice(-half)
+						;
+
+						fs.writeFileSync(output, first.join("\n")+"\n", { flag: "a+" });
+						fs.writeFileSync(output, second.join("\n")+"\n", { flag: "a+" });
 					}else{
 						if(fs.writeFileSync(output, content, "utf8")===false){
 							console.error("Error: Couldn't create " + output + ".");
@@ -90,13 +95,14 @@ var
 				process.exit(1);
 			}
 
-			var result=(isString) ?
-				callback( fs.readFileSync(input, "utf8") )
-				:
-				JSON.stringify( callback( fs.readFileSync(input, "utf8") ) )
+			var
+				result=(isString) ?
+					callback( fs.readFileSync(input, "utf8") )
+					:
+					JSON.stringify( callback( fs.readFileSync(input, "utf8") ) )
 			;
 
-			out( argv._[1], result);
+			out(argv._[1], result, !argv.stream && argv.big);
 
 		}else{ //streams
 
