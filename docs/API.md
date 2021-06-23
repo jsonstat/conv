@@ -316,6 +316,12 @@ When this option is set, **--status**, **--vlabel** and **--slabel** are ignored
 jsonstat2csv oecd.json oecd.jsv --rich
 ```
 
+#### --big (-b)
+
+Boolean. Trying to convert a very big dataset into a CSV can produce several errors. The default Node.js memory can be insufficient (Node.js *max-old-space-size* will need to be increased). But even with enough memory, an *Invalid string length* error could stop the execution of **jsonstat2csv**. To avoid this, use the **--big** option.
+
+This option will be ignored if the stream interface is enabled (**--stream**).
+
 ## jsonstat2object
 
 Converts JSON-stat into an object of arrays in the [Google DataTable format](https://developers.google.com/chart/interactive/docs/reference#dataparam).
