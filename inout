@@ -71,9 +71,10 @@ var
 					//So far, only in the non-stream interface...
 					if(big && Array.isArray(content)){
 						var
-							half=Math.ceil(content.length/2),
+							len=content.length,
+							half=Math.ceil(len/2),
 							first=content.slice(0, half),
-							second=content.slice(-half)
+							second=content.slice(half-len)
 						;
 
 						fs.writeFileSync(output, first.join("\n")+"\n", { flag: "a+" });
