@@ -12,13 +12,16 @@ More in the [Installation](https://github.com/jsonstat/conv/blob/master/docs/INS
 
 ## Available commands
 
+* [arrow2jsonstat](https://github.com/jsonstat/conv/blob/master/docs/API.md#arrow2jsonstat) - converts an Apache Arrow file to JSON-stat
 * [csv2jsonstat](https://github.com/jsonstat/conv/blob/master/docs/API.md#csv2jsonstat) - converts CSV into JSON-stat
 * [jsonstat2array](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2array) - converts JSON-stat into an array of arrays
 * [jsonstat2arrobj](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2arrobj) - converts JSON-stat into an array of objects
+* [jsonstat2arrow](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2arrow) - converts JSON-stat to the Apache Arrow format
 * [jsonstat2csv](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2csv) - converts JSON-stat into CSV
-* [jsonstat2object](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2object) - converts JSON-stat into an object
-* [jsonstatslice](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstatslice) (deprecated) - creates JSON-stat from JSON-stat
+* [jsonstat2objarr](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2objarr) - converts JSON-stat into an object of column-oriented arrays
+* [jsonstat2object](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2object) - converts JSON-stat into a DataTable object
 * [jsonstatdice](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstatdice) - creates JSON-stat from JSON-stat
+* [jsonstatslice](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstatslice) (deprecated) - creates JSON-stat from JSON-stat
 * [sdmx2jsonstat](https://github.com/jsonstat/conv/blob/master/docs/API.md#sdmx2jsonstat) - converts SDMX into JSON-stat
 
 Check the [API Reference](https://github.com/jsonstat/conv/blob/master/docs/API.md) page for more.
