@@ -1,0 +1,55 @@
+#!/usr/bin/env node
+
+var
+	aq=require("arquero"),
+	argv=require("yargs")
+		.version()
+		.usage("Usage:\n  $0 [input filename] [output filename]\n  $0 < [input] > [output] -t")
+		.example("$0 oecd.json oecd.arrow -0", "converts JSON-stat file oecd.json into an arrow binary file.")
+		.example("$0 < oecd.json > oecd.arrow -0  -t", "converts JSON-stat stream oecd.json into a binary stream (oecd.arrow).")
+		.boolean("f")
+		.alias("f", "flabel")
+		.describe("f", "Identify dimensions, value and status by label instead of ID")
+		.boolean("c")
+		.alias("c", "cid")
+		.describe("c", "Identify categories by ID instead of label")
+		.boolean("0")
+		.alias("0", "binary")
+		.describe("0", "Save in binary format")
+		.boolean("t")
+		.alias("t", "stream")
+		.describe("t", "Enable the stream interface")
+		.help("h")
+		.alias("h", "help")
+		.argv
+	,
+	inout=require("./inout"),
+
+	callback=function(contents){
+		var
+			tbl=inout.dataset(contents).toTable({
+				type: "objarr",
+				vlabel: "value",
+				slabel: "status",
+				status: true,
+				content: argv.cid ? "id": "label",
+				field: argv.flabel ? "label": "id"
+			})
+		;
+
+		if(tbl===null){
+			console.error("Error: The input does not containt valid JSON-stat.");
+			process.exit(1);
+		}
+
+		var arrow=aq.table(tbl).toArrowBuffer();
+
+		if(argv.binary){
+			return arrow;
+		}else{
+			return Array.from(arrow);
+		}
+	}
+;
+
+inout.main(argv, callback, null, argv.binary);

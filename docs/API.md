@@ -29,24 +29,37 @@ jsonstatslice --version
 
 ## Available commands
 
+* [arrow2jsonstat](https://github.com/jsonstat/conv/blob/master/docs/API.md#arrow2jsonstat) - converts an Apache Arrow file to JSON-stat
 * [csv2jsonstat](https://github.com/jsonstat/conv/blob/master/docs/API.md#csv2jsonstat) - converts CSV into JSON-stat
 * [jsonstat2array](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2array) - converts JSON-stat into an array of arrays
 * [jsonstat2arrobj](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2arrobj) - converts JSON-stat into an array of objects
+* [jsonstat2arrow](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2arrow) - converts JSON-stat to the Apache Arrow format
 * [jsonstat2csv](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2csv) - converts JSON-stat into CSV
-* [jsonstat2object](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2object) - converts JSON-stat into an object
-* [jsonstatslice](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstatslice) (deprecated) - creates JSON-stat from JSON-stat
+* [jsonstat2objarr](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2objarr) - converts JSON-stat into an object of column-oriented arrays
+* [jsonstat2object](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstat2object) - converts JSON-stat into a DataTable object
 * [jsonstatdice](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstatdice) - creates JSON-stat from JSON-stat
+* [jsonstatslice](https://github.com/jsonstat/conv/blob/master/docs/API.md#jsonstatslice) (deprecated) - creates JSON-stat from JSON-stat
 * [sdmx2jsonstat](https://github.com/jsonstat/conv/blob/master/docs/API.md#sdmx2jsonstat) - converts SDMX into JSON-stat
+
+## arrow2jsonstat
+
+Converts an Apache Arrow file created with [jsonstat2arrow](#jsonstat2arrow) back to JSON-stat.
+
+```
+csv2jsonstat oecd.arrow oecd.json
+```
 
 ## csv2jsonstat
 
-Converts CSV into JSON-stat.
+Converts a CSV created with [jsonstat2csv](#jsonstat2csv) back to JSON-stat.
 
 ```
 csv2jsonstat galicia.csv galicia.json
 ```
 
 All options are ignored when the input is a rich CSV in the [JSON-stat Comma-Separated Values format](https://github.com/jsonstat/csv) (CSV-stat or JSV for short). See [jsonstat2csv](#jsonstat2csv).
+
+### Options
 
 #### --vlabel (-v)
 
@@ -154,6 +167,8 @@ Converts JSON-stat into an array of objects.
 jsonstat2arrobj oecd.json oecd-arrobj.json
 ```
 
+### Options
+
 #### --status (-s)
 
 Boolean. Includes status information.
@@ -250,6 +265,42 @@ String. Comma-separated dimension IDs to be dropped from the output. Dimensions 
 jsonstat2arrobj canada.json canada-transp.json --by concept --drop country,year
 ```
 
+## jsonstat2arrow
+
+Converts JSON-stat to the Apache Arrow format.
+
+```
+jsonstat2arrow oecd.json oecd.arrow -c -0
+```
+
+Take into account that only basic metadata will be kept.
+
+### Options
+
+#### --binary (-0)
+
+Boolean. Saves data in binary format.
+
+When this option is not specified,
+
+```
+jsonstat2arrow oecd.json byte-array.json
+```
+
+the result is an array of integers representing bytes. That is not probably what you want. To get a file in the Apache Arrow IPC format use **--binary**.
+
+```
+jsonstat2arrow oecd.json oecd.arrow -0
+```
+
+#### --cid (-c)
+
+Boolean. Identifies categories by ID instead of label.
+
+#### --flabel (-f)
+
+Boolean. Identifies dimensions, value and status by label instead of ID.
+
 ## jsonstat2csv
 
 Converts JSON-stat into CSV.
@@ -257,6 +308,8 @@ Converts JSON-stat into CSV.
 ```
 jsonstat2csv oecd.json oecd.csv
 ```
+
+### Options
 
 #### --status (-s)
 
@@ -322,6 +375,61 @@ Boolean. Trying to convert a very big dataset into a CSV can produce several err
 
 This option will be ignored if the stream interface is enabled (**--stream**).
 
+## jsonstat2objarr
+
+Converts JSON-stat into an object of column-oriented arrays.
+
+## Options
+
+#### --status (-s)
+
+Boolean. Includes status information.
+
+#### --vlabel (-v)
+
+String. Specifies the label of the value field. Default is "Value".
+
+#### --slabel (-a)
+
+String. Specifies the label of the status field. Default is "Status".
+
+#### --flabel (-f)
+
+Boolean. Identifies dimensions, value and status by label instead of ID.
+
+#### --cid (-c)
+
+Boolean. Identifies categories by ID instead of label.
+
+#### --unit (-u)
+
+Boolean. Includes unit information in a property called "unit". If the dataset does not include unit information, the value of the "unit" property will be null.
+
+#### --meta (-m)
+
+Boolean. Returns a metadata-enriched output (object of objects, instead of array of objects).
+
+#### --comma (-k)
+
+Boolean. Represents values as strings instead of numbers with comma as the decimal mark.
+
+#### --by (-b)
+
+String. Transposes data by the specified dimension. String must be an existing dimension ID. Otherwise it will be ignored.
+
+#### --bylabel (-l)
+
+Boolean. Uses labels instead of IDs to identify categories of the transposed dimension, unless --cid has been specified.
+
+#### --prefix (-p)
+
+String. Text to be used as a prefix in the transposed categories. Only valid in combination with --by.
+
+#### --drop (-d)
+
+String. Comma-separated dimension IDs to be dropped from the output. Dimensions with more than one category cannot be dropped. Only valid in combination with --by.
+
+
 ## jsonstat2object
 
 Converts JSON-stat into an object of arrays in the [Google DataTable format](https://developers.google.com/chart/interactive/docs/reference#dataparam).
@@ -329,6 +437,8 @@ Converts JSON-stat into an object of arrays in the [Google DataTable format](htt
 ```
 jsonstat2object oecd.json oecd-object.json
 ```
+
+### Options
 
 #### --status (-s)
 
@@ -370,50 +480,6 @@ Boolean. Identifies categories by ID instead of label.
 jsonstat2object oecd.json oecd-object.json --cid
 ```
 
-## jsonstatslice
-
-Deprecated: use jsonstatdice instead.
-
-Creates JSON-stat from JSON-stat. It can be used to convert old JSON-stat to JSON-stat version 2.0. Because it supports a filter parameter, it can also be used to create a JSON-stat subset from a JSON-stat dataset. A JSON-stat subset produced by jsonstatslice has the same dimensions as the original dataset but with some of them fixed for a certain category.
-
-```
-jsonstatslice oecd.json oecd-subset.json -f area=DE,year=2014
-```
-
-In the previous example, oecd-subset.json only contains data for Germany in 2014.
-
-#### --filter (-f)
-
-String. Specifies a filter. When no filter is specified, the original JSON-stat will be returned unless it was not JSON-stat 2.0: in such case, it will be updated to version 2.0.
-
-```
-jsonstatslice jsonstat10.json jsonstat20.json
-```
-
-A filter is a comma-separated list of selection criteria. Each criterion must follow the pattern *{dimension id}={category id}*. Because dimension ids and category ids are strings that can contain whitespaces, they should be double-quoted. For example,
-
-```
-"area"="DE","year"="2014"
-```
-
-forces the subset to keep only category "DE" from dimension "area" and category "2014" from dimension "year". Because these ids do not contain whitespaces, double quotes are not strictly necessary.
-
-```
-jsonstatslice oecd.json oecd-subset.json -f area=DE,year=2014
-```
-
-#### --modify (-m)
-
-Boolean. When this option is not set, the *value* and *status* types of the input dataset are kept. When this option is set, the type of these two properties is transformed taking into account **--ovalue** and **--ostatus**.
-
-#### --ovalue (-o)
-
-Boolean. When **--modify** is set, it includes a "value" property of type object instead of array. When **--modify** is set and **--ovalue** is not, it includes a "value" property of type array.
-
-#### --ostatus (-s)
-
-Boolean. When status information is available and **--modify** is set, includes a "status" property of type object instead of array. When **--modify** is set and **--ostatus** is not, it includes a "value" property of type array.
-
 ## jsonstatdice
 
 Creates JSON-stat from JSON-stat. It can be used to convert old JSON-stat to JSON-stat version 2.0. Because it supports a filter parameter, it can also be used to create a JSON-stat subset from a JSON-stat dataset. A JSON-stat subset has the same dimensions as the original dataset but with only a selection of the original dimension categories.
@@ -423,6 +489,8 @@ jsonstatdice oecd.json oecd-subset.json -f area=BE/DE,year=2013/2014
 ```
 
 In the previous example, oecd-subset.json only contains data for Belgium and Germany and years 2013 and 2014.
+
+### Options
 
 #### --filter (-f)
 
@@ -462,6 +530,51 @@ Boolean. By default, the returned dataset includes an array property for "value"
 
 Boolean. By default, the returned dataset includes an array property for "status". Use **--ovalue** to get a "status" object instead of an array. This is recommended because it usually means a smaller file (usually status is only set for some values).
 
+## jsonstatslice
+
+Deprecated: use jsonstatdice instead.
+
+Creates JSON-stat from JSON-stat. It can be used to convert old JSON-stat to JSON-stat version 2.0. Because it supports a filter parameter, it can also be used to create a JSON-stat subset from a JSON-stat dataset. A JSON-stat subset produced by jsonstatslice has the same dimensions as the original dataset but with some of them fixed for a certain category.
+
+```
+jsonstatslice oecd.json oecd-subset.json -f area=DE,year=2014
+```
+
+In the previous example, oecd-subset.json only contains data for Germany in 2014.
+
+### Options
+
+#### --filter (-f)
+
+String. Specifies a filter. When no filter is specified, the original JSON-stat will be returned unless it was not JSON-stat 2.0: in such case, it will be updated to version 2.0.
+
+```
+jsonstatslice jsonstat10.json jsonstat20.json
+```
+
+A filter is a comma-separated list of selection criteria. Each criterion must follow the pattern *{dimension id}={category id}*. Because dimension ids and category ids are strings that can contain whitespaces, they should be double-quoted. For example,
+
+```
+"area"="DE","year"="2014"
+```
+
+forces the subset to keep only category "DE" from dimension "area" and category "2014" from dimension "year". Because these ids do not contain whitespaces, double quotes are not strictly necessary.
+
+```
+jsonstatslice oecd.json oecd-subset.json -f area=DE,year=2014
+```
+
+#### --modify (-m)
+
+Boolean. When this option is not set, the *value* and *status* types of the input dataset are kept. When this option is set, the type of these two properties is transformed taking into account **--ovalue** and **--ostatus**.
+
+#### --ovalue (-o)
+
+Boolean. When **--modify** is set, it includes a "value" property of type object instead of array. When **--modify** is set and **--ovalue** is not, it includes a "value" property of type array.
+
+#### --ostatus (-s)
+
+Boolean. When status information is available and **--modify** is set, includes a "status" property of type object instead of array. When **--modify** is set and **--ostatus** is not, it includes a "value" property of type array.
 
 ## sdmx2jsonstat
 

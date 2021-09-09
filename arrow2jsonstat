@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+
+var
+	utils=require("jsonstat-suite"),
+	aq=require("arquero"),
+	argv=require("yargs")
+		.version()
+		.usage("Usage:\n  $0 [input filename] [output filename]\n  $0 < [input] > [output] -t")
+		.example("$0 oecd.arrow oecd.json -0", "converts an arrow file into a JSON-stat file.")
+		.example("$0 < oecd.arrow > oecd.json -0  -t", "converts an arrow stream into a JSON-stat stream.")
+		.boolean("t")
+		.alias("t", "stream")
+		.describe("t", "Enable the stream interface")
+		.help("h")
+		.alias("h", "help")
+		.argv
+	,
+	inout=require("./inout"),
+
+	callback=function(contents){
+		var aqtbl=aq.fromArrow(contents);
+
+		if(aqtbl===null){
+			console.error("Error: The input does not containt valid Arrow.");
+			process.exit(1);
+		}
+
+		return utils.fromTable(aqtbl.objects(), {
+		  type: "arrobj",
+		  vlabel: "value",
+		  slabel: "status",
+		  ostatus: true
+		});
+	}
+;
+
+//isString: false; outBinary: false: inBinary: true
+inout.main(argv, callback, false, false, true);

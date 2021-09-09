@@ -44,7 +44,12 @@ var
 		return ds;
 	},
 
-	main=function(argv, callback, isString){
+	main=function(argv, callback, isString, outBinary, inBinary){
+		var
+			outcoding=outBinary ? null : "utf8",
+			incoding=inBinary ? null : "utf8"
+		;
+
 		if(!argv.stream){
 			if(argv._.length<2){
 				console.error("Error: When --stream is not enabled you must specify two filenames.");
@@ -52,6 +57,7 @@ var
 			}
 			//arguments
 			var
+				result,
 				input=argv._[0],
 				out=function(output, content, big){
 					if(fs.existsSync(output)){
@@ -80,7 +86,7 @@ var
 						fs.writeFileSync(output, first.join("\n")+"\n", { flag: "a+" });
 						fs.writeFileSync(output, second.join("\n")+"\n", { flag: "a+" });
 					}else{
-						if(fs.writeFileSync(output, content, "utf8")===false){
+						if(fs.writeFileSync(output, content, outcoding)===false){
 							console.error("Error: Couldn't create " + output + ".");
 							process.exit(1);
 						}
@@ -96,14 +102,18 @@ var
 				process.exit(1);
 			}
 
-			var
+			if(outBinary){//2arrow
+				result=callback( fs.readFileSync(input, incoding) );
+				out(argv._[1], result);
+			}else{
 				result=(isString) ?
-					callback( fs.readFileSync(input, "utf8") )
+					callback( fs.readFileSync(input, incoding) )
 					:
-					JSON.stringify( callback( fs.readFileSync(input, "utf8") ) )
-			;
+					JSON.stringify( callback( fs.readFileSync(input, incoding) ) )
+				;
 
-			out(argv._[1], result, !argv.stream && argv.big);
+				out(argv._[1], result, !argv.stream && argv.big);
+			}
 
 		}else{ //streams
 
@@ -112,13 +122,17 @@ var
 				process.exit(1);
 			}
 
-			rw.readFile("/dev/stdin", "utf8", function(error, contents){
+			if(outBinary){
+				isString=true; //Is not really a string but it's not an object that should be stringified either
+			}
+
+			rw.readFile("/dev/stdin", incoding, function(error, contents){
 				rw.writeFile("/dev/stdout",
 					(isString) ?
 						callback(contents)
 						:
 						JSON.stringify( callback(contents) ),
-					"utf8",
+					outcoding,
 					function(err){
 						process.exit( +(err===null) );
 					}
