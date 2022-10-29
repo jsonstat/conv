@@ -31,7 +31,7 @@ Check the [API Reference](https://github.com/jsonstat/conv/blob/master/docs/API.
 Get unemployment rate time series by country from Eurostat and convert it to CSV.
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" -o unr.jsonstat
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" -o unr.jsonstat
 
 jsonstat2csv unr.jsonstat unr.csv
 ```
@@ -39,7 +39,7 @@ jsonstat2csv unr.jsonstat unr.csv
 Or using the stream interface:
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstat2csv > unr.csv -t
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" | jsonstat2csv > unr.csv -t
 ```
 
 More in the [Examples](https://github.com/jsonstat/conv/blob/master/docs/EXAMPLES.md) page.
