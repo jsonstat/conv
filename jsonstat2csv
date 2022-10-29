@@ -26,10 +26,10 @@ var
 		.alias("l", "slabel")
 		.describe("l", "Label of the status field (default is 'Status')")
 		.boolean("f")
-		.alias("f", "field")
+		.alias("f", "fid")
 		.describe("f", "Use field IDs instead of labels.")
 		.boolean("o")
-		.alias("o", "content")
+		.alias("o", "cid")
 		.describe("o", "Use content IDs instead of labels.")
 		.boolean("b")
 		.alias("b", "big")
@@ -53,8 +53,8 @@ var
 					status: argv.status,
 					vlabel: argv.vlabel,
 					slabel: argv.slabel,
-					field: argv.field ? "id" : "label",
-					content: argv.content ? "id" : "label",
+					field: argv.fid ? "id" : "label",
+					content: argv.cid ? "id" : "label",
 					na: argv.na,
 					delimiter: (argv.column==="\\t") ? "\t" : argv.column,
 					separator: (argv.unit==="\\t") ? "\t" : argv.unit,
