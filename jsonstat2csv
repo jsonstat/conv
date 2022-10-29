@@ -25,6 +25,12 @@ var
 		.describe("v", "Label of the value field (default is 'Value')")
 		.alias("l", "slabel")
 		.describe("l", "Label of the status field (default is 'Status')")
+		.boolean("f")
+		.alias("f", "field")
+		.describe("f", "Use field IDs instead of labels.")
+		.boolean("o")
+		.alias("o", "content")
+		.describe("o", "Use content IDs instead of labels.")
 		.boolean("b")
 		.alias("b", "big")
 		.describe("b", "This is an emergency option only to be used when the stream interface is not enabled and the dataset is very big.")
@@ -47,6 +53,8 @@ var
 					status: argv.status,
 					vlabel: argv.vlabel,
 					slabel: argv.slabel,
+					field: argv.field ? "id" : "label",
+					content: argv.content ? "id" : "label",
 					na: argv.na,
 					delimiter: (argv.column==="\\t") ? "\t" : argv.column,
 					separator: (argv.unit==="\\t") ? "\t" : argv.unit,
