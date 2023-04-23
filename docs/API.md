@@ -343,7 +343,7 @@ Boolean. Identifies dimensions, value and status by ID instead of label.
 jsonstat2csv oecd.json oecd.csv --fid
 ```
 
-#### --cid (-c)
+#### --cid (-o)
 
 Boolean. Identifies categories by ID instead of label.
 
@@ -382,9 +382,9 @@ String. Dimension ID. When a valid dimension ID is provided, the resulting CSV i
 
 When this option is set with a valid ID, **--status**, **--vlabel** and **--slabel** are ignored. When **--rich** is set or an invalid ID is specified, **--by** is ignored.
 
-#### --drop (-o)
+#### --drop (-p)
 
-String. Comma-separated list of dimension IDs. When a valid dimension ID is provided in **--by** parameter, ***drop*** can provide a list of constant dimension IDs to remove from the resulting CSV.
+String. Comma-separated list of dimension IDs. When a valid dimension ID is provided in **--by** parameter, **--drop** can provide a list of constant dimension IDs to remove from the resulting CSV.
 
 ```
 jsonstat2csv eurostat.json eurostat.csv --by unit --drop freq,age
