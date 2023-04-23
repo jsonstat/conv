@@ -335,6 +335,23 @@ String. Specifies the label of the status field. Default is "Status".
 jsonstat2csv oecd.json oecd.csv --status --slabel stat
 ```
 
+#### --fid (-f)
+
+Boolean. Identifies dimensions, value and status by ID instead of label.
+
+```
+jsonstat2csv oecd.json oecd.csv --fid
+```
+
+#### --cid (-c)
+
+Boolean. Identifies categories by ID instead of label.
+
+```
+jsonstat2csv oecd.json oecd.csv --cid
+```
+
+
 #### --na (-n)
 
 String. Not available text. Default is "n/a".

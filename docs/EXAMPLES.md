@@ -37,16 +37,16 @@ Tables on EU policy
 
 Connect to the JSON-stat Eurostat API to retrieve dataset **tesem120**:
 
-https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120
 
 You can view the contents of the dataset at
 
-https://jsonstat.com/explorer/#/https%3A%2F%2Fec.europa.eu%2Feurostat%2Fwdds%2Frest%2Fdata%2Fv2.1%2Fjson%2Fen%2Ftesem120%3Fprecision%3D1
+https://jsonstat.com/explorer/#/https%3A%2F%2Fec.europa.eu%2Feurostat%2Fapi%2Fdissemination%2Fstatistics%2F1.0%2Fdata%2Ftesem120
 
 To download the dataset from the command line using Eurostat's API, run [cURL](https://curl.haxx.se/dlwiz/?type=bin):
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" -o eurostat.jsonstat
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" -o eurostat.jsonstat
 ```
 
 JSON-stat keeps data and metadata completely apart because it is designed to be an efficient transport format. That probably makes it human-unfriendly. Fortunately, we can use jsonstat-conv to convert JSON-stat to other formats.
@@ -195,7 +195,7 @@ json2csv < eurostat-comma.json > eurostat-semi.csv -w ";"
 All the process has required three lines and three files (_eurostat.jsonstat_, _eurostat-drop.json_, _eurostat.csv_):
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" -o eurostat.jsonstat
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" -o eurostat.jsonstat
 
 jsonstatdice eurostat.jsonstat eurostat-subset.jsonstat --filter sex=T,age=Y15-74,unit=PC_ACT
 
@@ -221,19 +221,19 @@ jsonstat2arrobj < eurostat.jsonstat > eurostat.json --stream
 So to get a comma-delimited CSV with dot as the decimal mark in a single line:
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatdice --filter sex=T,age=Y15-74,unit=PC_ACT --stream | jsonstat2arrobj --by geo --drop sex,age,unit --stream | json2csv > eurostat.csv
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" | jsonstatdice --filter sex=T,age=Y15-74,unit=PC_ACT --stream | jsonstat2arrobj --by geo --drop sex,age,unit --stream | json2csv > eurostat.csv
 ```
 
 Or a little shorter:
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatdice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -t | json2csv > eurostat.csv
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" | jsonstatdice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -t | json2csv > eurostat.csv
 ```
 
 And to get a semicolon-delimited CSV with comma as the decimal mark:
 
 ```
-curl "https://ec.europa.eu/eurostat/wdds/rest/data/v2.1/json/en/tesem120?precision=1" | jsonstatdice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -k -t | json2csv > eurostat-semi.csv -w ";"
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" | jsonstatdice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -k -t | json2csv > eurostat-semi.csv -w ";"
 ```
 
 ## A UNECE Example
