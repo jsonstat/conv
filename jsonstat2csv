@@ -25,6 +25,10 @@ var
 		.describe("v", "Label of the value field (default is 'Value')")
 		.alias("l", "slabel")
 		.describe("l", "Label of the status field (default is 'Status')")
+		.alias("y", "by")
+		.describe("y", "Dimension to transposed by")
+		.alias("o", "drop")
+		.describe("o", "Comma-separated list of constant dimensions to remove when a valid 'by' is specified.")
 		.boolean("b")
 		.alias("b", "big")
 		.describe("b", "This is an emergency option only to be used when the stream interface is not enabled and the dataset is very big.")
@@ -50,7 +54,9 @@ var
 					na: argv.na,
 					delimiter: (argv.column==="\\t") ? "\t" : argv.column,
 					separator: (argv.unit==="\\t") ? "\t" : argv.unit,
-					decimal: argv.decimal
+					decimal: argv.decimal,
+					by: argv.by,
+					drop: argv.drop ?  argv.drop.split(",") : []
 				}
 			)
 		;

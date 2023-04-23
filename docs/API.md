@@ -359,11 +359,25 @@ String. Decimal separator. Default is ".", unless column separator is ";" (then 
 jsonstat2csv oecd.json oecd.tsv --column "\t" --decimal ","
 ```
 
+#### --by (-y)
+
+String. Dimension ID. When a valid dimension ID is provided, the resulting CSV is transposed by that dimension and the value column is replaced by as many columns as categories in the specified dimension.
+
+When this option is set with a valid ID, **--status**, **--vlabel** and **--slabel** are ignored. When **--rich** is set or an invalid ID is specified, **--by** is ignored.
+
+#### --drop (-o)
+
+String. Comma-separated list of dimension IDs. When a valid dimension ID is provided in **--by** parameter, ***drop*** can provide a list of constant dimension IDs to remove from the resulting CSV.
+
+```
+jsonstat2csv eurostat.json eurostat.csv --by unit --drop freq,age
+```
+
 #### --rich (-r)
 
 Boolean. Output is a rich CSV in the [JSON-stat Comma-Separated Values format](https://github.com/jsonstat/csv) (CSV-stat, or JSV for short). CSV-stat is CSV plus a metadata header. CSV-stat supports all the JSON-stat dataset core semantics. This means that CSV-stat can be converted back to JSON-stat (using [csv2jsonstat](#csv2jsonstat)) without loss of information (only the *note*, *link*, *child*, *coordinates* and *extension* properties are not currently supported).
 
-When this option is set, **--status**, **--vlabel** and **--slabel** are ignored.
+When this option is set, **--status**, **--vlabel**, **--slabel**, **--by** and **--drop** are ignored.
 
 ```
 jsonstat2csv oecd.json oecd.jsv --rich
