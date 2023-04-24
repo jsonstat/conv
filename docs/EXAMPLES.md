@@ -25,28 +25,27 @@ Let's assume that we must build a spreadsheet table of unemployment rate by coun
 
 You'll need to find the Eurostat dataset identifier. Go to
 
-https://ec.europa.eu/eurostat/data/database
+https://jsonstat.com/eurostat/
 
 and then
 
 ```
 Tables on EU policy
-  > Employment performance monitor - indicators (tesem)
-    > Unemployment rate (tesem120)
+  > Employment and social policy indicators
+    > Employment performance monitor - indicators
+      > Unemployment rate by sex [tesem120]
 ```
 
-Connect to the JSON-stat Eurostat API to retrieve dataset **tesem120**:
+Use the "Load Data" button to retrieve the data. You can view the contents of the **tesem120** dataset using the "List" or "Table" buttons. 
 
-https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120
+Use the "API query" button to get the API URL. The result is:
 
-You can view the contents of the dataset at
-
-https://jsonstat.com/explorer/#/https%3A%2F%2Fec.europa.eu%2Feurostat%2Fapi%2Fdissemination%2Fstatistics%2F1.0%2Fdata%2Ftesem120
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120?lang=en
 
 To download the dataset from the command line using Eurostat's API, run [cURL](https://curl.haxx.se/dlwiz/?type=bin):
 
 ```
-curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" -o eurostat.jsonstat
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120?lang=en" -o eurostat.jsonstat
 ```
 
 JSON-stat keeps data and metadata completely apart because it is designed to be an efficient transport format. That probably makes it human-unfriendly. Fortunately, we can use jsonstat-conv to convert JSON-stat to other formats.
@@ -79,10 +78,10 @@ If you need a semicolon-delimited CSV with comma as the decimal mark, use instea
 jsonstat2csv eurostat.jsonstat eurostat-semi.csv --column ";"
 ```
 
-**jsonstat2csv** comes with several options that allow us to customize the output. For example, to include status information and rename the "Status" and "Value" columns to "symbol" and "rate":
+**jsonstat2csv** comes with several options that allow us to customize the output. For example, to include status information and rename the "Status" and "Value" columns to "Symbol" and "Rate":
 
 ```
-jsonstat2csv eurostat.jsonstat eurostat-status.csv --status --vlabel rate --slabel symbol
+jsonstat2csv eurostat.jsonstat eurostat-status.csv --status --vlabel Rate --slabel Symbol
 ```
 
 **jsonstat2csv** also allows you to create a rich CSV document with extra metadata header lines ([CSV-stat](https://github.com/jsonstat/csv)).
@@ -99,7 +98,7 @@ csv2jsonstat eurostat.jsv eurostat-conv.jsonstat
 
 CSV-stat supports all JSON-stat dataset features except _note_, _link_, _child_, _coordinates_ and _extension_. In the previous example, eurostat.jsonstat contained extension information: eurostat-conv.jsonstat is equivalent to eurostat.jsonstat, only the _extension_ property is missing.)
 
-**jsonstat2csv**, though, does not include options to change the structure of the data. These features are available only in **jsonstat2arrobj** which is the main way to export JSON-stat to other formats. In particular, **jsonstat2arrobj** converts JSON-stat into an array of objects (_arrobj_, from now on), which is probably the most popular structure used to exchange data in JSON. As a consequence, there are many tools to transform _arrobjs_ into other JSON flavors or even to convert them to CSVs.
+You can also use **jsonstat2arrobj** to convert JSON-stat into an array of objects (_arrobj_, from now on), which is probably the most popular structure used to exchange data in JSON. There are many tools to transform _arrobjs_ into other JSON flavors or even to convert them to CSVs.
 
 So instead of converting Eurostat's JSON-stat directly to CSV using **jsonstat2csv** we are going to translate it to an _arrobj_ using **jsonstat2arrobj** and then convert it to CSV using open source tools.
 
@@ -116,12 +115,13 @@ As you probably noticed, the _eurostat.json_ does not have the structure we need
 ```json
 [
   {
-    "unit": "Percentage of active population",
-    "sex": "Total",
-    "age": "From 15 to 74 years",
-    "time": "2005",
+    "time": "2009",
     "geo": "Austria",
-    "value": 5.6
+    "sex": "Total",
+    "unit": "Percentage of population in the labour force",
+    "age": "From 15 to 74 years",
+    "freq": "Annual",
+    "value": 5.7
   },
   ...
 ]
@@ -132,14 +132,14 @@ Instead, we need to have a property for each category of the _geo_ dimension (wh
 ```json
 [
   {
-    "unit": "Percentage of active population",
+    "unit": "Percentage of population in the labour force",
     "sex": "Total",
     "age": "From 15 to 74 years",
-    "time": "2005",
-    "AT": 5.6,
-    "BE": 8.5,
-    "BG": 10.1,
-    "CY": 5.3,
+    "time": "2009",
+    "AT": 5.7,
+    "BE": 8,
+    "BG": 7.9,
+    "CY": 5.4,
     ...
   },
   ...
@@ -158,10 +158,10 @@ Because we are only interested in unemployment as a percentage of active populat
 jsonstatdice eurostat.jsonstat eurostat-subset.jsonstat --filter sex=T,age=Y15-74,unit=PC_ACT
 ```
 
-Now that we are sure that _sex_, _age_ and _unit_ are single-category dimensions, we can remove them from the transposed JSON:
+Now that we are sure that _sex_, _age_ and _unit_ are single-category dimensions, we can remove them from the transposed JSON. In the original Eurostat dataset, _freq_ was also a single-category dimension (always "annual"). We can drop all of them:
 
 ```
-jsonstat2arrobj eurostat-subset.jsonstat eurostat-drop.json --by geo --drop sex,age,unit
+jsonstat2arrobj eurostat-subset.jsonstat eurostat-drop.json --by geo --drop sex,age,unit,freq
 ```
 
 #### 4. Convert JSON to CSV
@@ -181,7 +181,7 @@ json2csv < eurostat-drop.json > eurostat.csv
 The resulting CSV has comma as the column delimiter and dot as the decimal mark. If what you need is a CSV with comma as the decimal mark, first you must use the **jsonstat2arrobj** _--comma_ (decimal mark) option:
 
 ```
-jsonstat2arrobj eurostat-subset.jsonstat eurostat-comma.json --by geo --drop sex,age,unit --comma
+jsonstat2arrobj eurostat-subset.jsonstat eurostat-comma.json --by geo --drop sex,age,unit,freq --comma
 ```
 
 And then specify in **json2csv** a different column delimiter (for example, a semicolon):
@@ -190,18 +190,47 @@ And then specify in **json2csv** a different column delimiter (for example, a se
 json2csv < eurostat-comma.json > eurostat-semi.csv -w ";"
 ```
 
-#### 5. Altogether now
+#### 5. Without external packages
+
+In fact, steps 3 and 4 are not necessary because you can produce the desired CSV directly from JSON-stat. We can use _eurostat-subset.jsonstat_ as input (which was produced with **jsonstatdice**) or we can retrieve the subset directly from Eurostat.
+
+Let's go back to step 1. Visit:
+
+https://jsonstat.com/eurostat/
+
+and then
+
+```
+Tables on EU policy
+  > Employment and social policy indicators
+    > Employment performance monitor - indicators
+      > Unemployment rate by sex [tesem120]
+```
+
+and make sure only one category is selected in each dimension but "Time" and "Geopolitical entity (reporting)". For this goal, you will need to select "Total" in the "Sex" dimension. Then press the "Load Data" button and the "API query" button. You will get this URL:
+
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120?lang=en&sex=T
+
+Use cURL to download the new dataset:
+
+```
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120?lang=en&sex=T" -o eurostat-subset.jsonstat
+```
+
+And convert to CSV transposing by the _geo_ dimension, dropping _sex_, _age_, _unit_ and _freq_, requesting IDs instead of dimension labels (--fid):
+
+```
+jsonstat2csv eurostat-subset.jsonstat eurostat-subset.csv --by geo --drop sex,age,unit,freq --fid 
+```
+
+#### 6. Altogether now
 
 All the process has required three lines and three files (_eurostat.jsonstat_, _eurostat-drop.json_, _eurostat.csv_):
 
 ```
-curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" -o eurostat.jsonstat
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120?lang=en&sex=T" -o eurostat-subset.jsonstat
 
-jsonstatdice eurostat.jsonstat eurostat-subset.jsonstat --filter sex=T,age=Y15-74,unit=PC_ACT
-
-jsonstat2arrobj eurostat-subset.jsonstat eurostat-drop.json --by geo --drop sex,age,unit
-
-json2csv < eurostat-drop.json > eurostat.csv
+jsonstat2csv eurostat-subset.jsonstat eurostat-subset.csv --by geo --drop sex,age,unit,freq --fid 
 ```
 
 This is not necessary, though: all the process can be done in a single line, piping the output of a program to another program. For that, we need to enable **jsonstat2arrobj** stream interface (_--stream_) which will allow us to use pipes (|) and redirects (<, >).
@@ -209,31 +238,25 @@ This is not necessary, though: all the process can be done in a single line, pip
 In the stream interface, this command
 
 ```
-jsonstat2arrobj eurostat.jsonstat eurostat.json
+jsonstat2csv eurostat-subset.jsonstat eurostat-subset.csv --by geo --drop sex,age,unit,freq --fid
 ```
 
 must be rewritten as
 
 ```
-jsonstat2arrobj < eurostat.jsonstat > eurostat.json --stream
+jsonstat2csv < eurostat-subset.jsonstat > eurostat-subset.csv --by geo --drop sex,age,unit,freq --fid --stream
 ```
 
 So to get a comma-delimited CSV with dot as the decimal mark in a single line:
 
 ```
-curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" | jsonstatdice --filter sex=T,age=Y15-74,unit=PC_ACT --stream | jsonstat2arrobj --by geo --drop sex,age,unit --stream | json2csv > eurostat.csv
-```
-
-Or a little shorter:
-
-```
-curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" | jsonstatdice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -t | json2csv > eurostat.csv
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120?lang=en&sex=T" | jsonstat2csv --by geo --drop sex,age,unit,freq --fid --stream > eurostat-subset.csv
 ```
 
 And to get a semicolon-delimited CSV with comma as the decimal mark:
 
 ```
-curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120" | jsonstatdice -f sex=T,age=Y15-74,unit=PC_ACT -t | jsonstat2arrobj -b geo -d sex,age,unit -k -t | json2csv > eurostat-semi.csv -w ";"
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tesem120?lang=en&sex=T" | jsonstat2csv --by geo --drop sex,age,unit,freq --fid --column ";" --decimal "," --stream > eurostat-subset-semi.csv
 ```
 
 ## A UNECE Example
@@ -256,80 +279,56 @@ and then
 
 ```
 UNECE Statistical Database
-  > Country Overviews
+  > Country Profiles
     > UNECE Member Countries in Figures
       > Country Overview by Country and Time
 ```
 
-On table [Country Overview by Country and Time](http://w3.unece.org/PXWeb2015/pxweb/en/STAT/STAT__10-CountryOverviews__01-Figures/ZZZ_en_CoSummary_r.px/table/tableViewLayout1/) select *Unemployment rate* as Indicator, all countries for the Country dimension and all years for the Year dimension. Then build the table (*Table - Layout 1*) and select the *About table* tab.
-
-Click on **+ Save your retrieval**, and select *JSON-stat file (JSON)* in the pull-down menu and press **Finish**. You will get a URL (if it is an http URL, edit it to point to https):
+On table [Country Overview by Country and Time](https://w3.unece.org/PXWeb2015/pxweb/en/STAT/STAT__10-CountryOverviews__01-Figures/ZZZ_en_CoSummary_r.px/) select *Unemployment rate* as Indicator, all countries for the Country dimension and all years for the Year dimension. Then click **Show table** and expand **Save your query**. In the **Save the result as** field select *JSON-stat 2 file (JSON)*. You will get a URL:
 
 ```
-https://w3.unece.org/PXWeb2015/sq/7606161f-5f03-432b-9906-5c1a6e950629
+https://w3.unece.org/PXWeb2015/sq/6c97a19a-d916-444e-93d9-1c2e951351d8
 ```
 
 To download the dataset from the command line, let's run [cURL](https://curl.haxx.se/dlwiz/?type=bin):
 
 ```
-curl https://w3.unece.org/PXWeb2015/sq/7606161f-5f03-432b-9906-5c1a6e950629 -o unece.jsonstat
+curl https://w3.unece.org/PXWeb2015/sq/6c97a19a-d916-444e-93d9-1c2e951351d8 -o unece.jsonstat
 ```
 
-#### 2. Convert JSON-stat to a more popular JSON data structure
+#### 2. Convert JSON-stat to CSV
 
-This part is similar to the Eurostat one: we need to transpose by Country and drop Indicator (it's always *Unemployment rate* because that's the only category we selected in the JSON query):
-
-```
-jsonstat2arrobj unece.jsonstat unece-transp.json --by Country --drop Indicator
-```
-
-Unfortunately, UNECE does not use [2-letter country codes](https://datahub.io/core/country-list/r/0.html). What country is *008*? The result is not as user-friendly as Eurostat's.
-
-Fortunately, we can use the label instead of the identifier as the name of each category of the transposed dimension with the _--bylabel_ (_-l_) option:
+This part is similar to the Eurostat example: we need to transpose by Country and drop Indicator (it's always *Unemployment rate* because that's the only category we selected in the JSON query):
 
 ```
-jsonstat2arrobj unece.jsonstat unece.json --by Country --bylabel --drop Indicator
+jsonstat2csv unece.jsonstat unece-transp.csv --by Country --drop Indicator
 ```
 
-If we need to use comma as the decimal mark:
+If we want to use semicolon as the column delimiter and comma as the decimal mark:
 
 ```
-jsonstat2arrobj unece.jsonstat unece-comma.json --by Country --bylabel --drop Indicator --comma
+jsonstat2csv unece.jsonstat unece-semi.csv --by Country --drop Indicator --column ";"
 ```
 
-#### 3. Convert JSON to CSV
-
-Nothing new here: read [Eurostat's example](#a-eurostat-example) if you haven't.
-
-```
-json2csv < unece.json > unece.csv
-```
-
-If we want to use semicolon as the column delimiter:
-
-```
-json2csv < unece-comma.json > unece-semi.csv -w ";"
-```
-
-#### 4. Altogether now
+#### 3. Altogether now
 
 Comma-delimited CSV with dot as the decimal mark:
 
 ```
-curl https://w3.unece.org/PXWeb2015/sq/7606161f-5f03-432b-9906-5c1a6e950629 | jsonstat2arrobj -b Country -d Indicator -l -t | json2csv > unece.csv
+curl https://w3.unece.org/PXWeb2015/sq/6c97a19a-d916-444e-93d9-1c2e951351d8 | jsonstat2csv -y Country -p Indicator -t > unece.csv
 ```
 
 Semicolon-delimited CSV with comma as the decimal mark:
 
 ```
-curl https://w3.unece.org/PXWeb2015/sq/7606161f-5f03-432b-9906-5c1a6e950629 | jsonstat2arrobj -b Country -d Indicator -l -k -t | json2csv > unece-semi.csv -w ";"
+curl https://w3.unece.org/PXWeb2015/sq/6c97a19a-d916-444e-93d9-1c2e951351d8 | jsonstat2csv -y Country -p Indicator -c ";" -t > unece-semi.csv
 ```
 
 ## A Norwegian Example
 
-Like UNECE's, [Statistics Norway's API](https://www.ssb.no/en/omssb/tjenester-og-verktoy/api/px-api) is rich and powerful and allows a high degree of dataset customization. Flexibility comes, of course, at a price: (JSON query's) complexity. Statistics Norway also offers [ready-made datasets](http://data.ssb.no/api/v0/dataset/?lang=en). Statistics Norway has predefined a collection of datasets, based on its most popular tables. The trade-off: these datasets cannot be customized.
+Like UNECE's, [Statistics Norway's API](https://www.ssb.no/en/omssb/tjenester-og-verktoy/api/px-api) is rich and powerful and allows a high degree of dataset customization. Flexibility comes, of course, at a price: (JSON query's) complexity. Statistics Norway also offers [ready-made datasets](https://data.ssb.no/api/v0/dataset/?lang=en). Statistics Norway has predefined a collection of datasets, based on its most popular tables. The trade-off: these datasets cannot be customized.
 
-Take, for example, [dataset 1082](http://data.ssb.no/api/v0/dataset/1082?lang=en): it contains the population, by sex and one-year age groups and is perfect to build a population pyramid. But, what if instead we are interested in the total population by age group? Dataset 1082 does contain the male and female population but not the total population. Could we compute it on the fly from the terminal? In a single line? Yes, we can.
+Take, for example, [dataset 1082](https://data.ssb.no/api/v0/dataset/1082?lang=en): it contains the population, by sex and one-year age groups and is perfect to build a population pyramid. But, what if instead we are interested in the total population by age group? Dataset 1082 does contain the male and female population but not the total population. Could we compute it on the fly from the terminal? In a single line? Yes, we can.
 
 Let's assume that we must analyze the differences in the participation rate between men and women in the Norwegian labor market. We want to use as indicator the female participation rate divided by the male participation rate.
 
@@ -339,26 +338,26 @@ Let's assume that we must analyze the differences in the participation rate betw
 
 #### 1. Retrieve the participation rate by sex in recent years from Statistics Norway
 
-[Dataset 1052](http://data.ssb.no/api/v0/dataset/1054?lang=en) from Statistics Norway provides a monthly time series of the main labor market concepts by sex and age (more than 18,000 values). Dataset 1082 in the JSON-stat format is available at:
+[Dataset 1052](https://data.ssb.no/api/v0/dataset/1054?lang=en) from Statistics Norway provides a monthly time series of the main labor market concepts by sex and age (more than 18,000 values). Dataset 1082 in the JSON-stat format is available at:
 
-http://data.ssb.no/api/v0/dataset/1054.json?lang=en
+https://data.ssb.no/api/v0/dataset/1054.json?lang=en
 
 You can view the contents of the dataset at
 
-http://jsonstat.com/explorer/#/http%3A%2F%2Fdata.ssb.no%2Fapi%2Fv0%2Fdataset%2F1054.json%3Flang%3Den
+https://jsonstat.com/explorer/#/https%3A%2F%2Fdata.ssb.no%2Fapi%2Fv0%2Fdataset%2F1054.json%3Flang%3Den
 
 To download the dataset from the command line, run [cURL](https://curl.haxx.se/dlwiz/?type=bin):
 
 ```
-curl "http://data.ssb.no/api/v0/dataset/1054.json?lang=en" -o no.jsonstat
+curl "https://data.ssb.no/api/v0/dataset/1054.json?lang=en" -o no.jsonstat
 ```
 
 #### 2. Filter data
 
-The dataset is big because it contains many indicators available by sex and age (besides time). Because we are going to calculate our ratio using the "Labour force in per cent of the population (seasonally adjusted)" (*ArbstyrkP1*), we don't really need any other categories of the *ContentsCode* dimension. And because we are not going to compute results by age (*Alder*), we just need to keep the *15-74* category. Creating a JSON-stat subset is easy with **jsonstatdice**.
+The dataset is big because it contains many indicators available by sex and age (besides time). Because we are going to calculate our ratio using the "Labour force in per cent of the population" (*ArbStyrkProsBefolkn*), we don't really need any other categories of the *ContentsCode* dimension. And because we are not going to compute results by age (*Alder*), we just need to keep the *15-74* category. Finally, we are going to use "Seasonally adjusted data" (*S*) in the *Justering* dimension ("type of adjustment"). Creating a JSON-stat subset is easy with **jsonstatdice**.
 
 ```
-jsonstatdice no.jsonstat no-subset.jsonstat --filter ContentsCode=ArbstyrkP1,Alder=15-74
+jsonstatdice no.jsonstat no-subset.jsonstat --filter ContentsCode=ArbStyrkProsBefolkn,Alder=15-74,Justering=S
 ```
 
 #### 3. Convert JSON-stat to a more popular JSON data structure
@@ -378,7 +377,8 @@ In the output, dimensions are named according to their identifier (age is *Alder
     "1": 75,
     "2": 67.7,
     "Alder": "15-74 years",
-    "ContentsCode": "Labour force in per cent of the population, seasonally adjusted",
+    "ContentsCode": "Labour force in per cent of the population",
+    "Justering": "Seasonally adjusted",
     "Tid": "2006M02"
   },
   ...
@@ -398,7 +398,8 @@ But by default categories are named according to their label. The _--cid_ option
     "1": 75,
     "2": 67.7,
     "Alder": "15-74",
-    "ContentsCode": "ArbstyrkP1",
+    "ContentsCode": "ArbStyrkProsBefolkn",
+    "Justering": "S",
     "Tid": "2006M02"
    },
    ...
@@ -424,15 +425,15 @@ ndjson-split < no-id.json > no.ndjson
 Now, instead of a single line with an array of objects, we have as many lines as objects.
 
 ```json
-{"0":71.4,"1":75,"2":67.7,"Alder":"15-74","ContentsCode":"ArbstyrkP1","Tid":"2006M02"}
-{"0":71.4,"1":74.9,"2":67.7,"Alder":"15-74","ContentsCode":"ArbstyrkP1","Tid":"2006M03"}
-{"0":71.4,"1":74.9,"2":67.8,"Alder":"15-74","ContentsCode":"ArbstyrkP1","Tid":"2006M04"}
+{"0":71.4,"1":75,"2":67.7,"Alder":"15-74","ContentsCode":"ArbStyrkProsBefolkn","Tid":"2006M02", "Justering":"S"}
+{"0":71.4,"1":74.9,"2":67.7,"Alder":"15-74","ContentsCode":"ArbStyrkProsBefolkn","Tid":"2006M03", "Justering":"S"}
+{"0":71.4,"1":74.9,"2":67.8,"Alder":"15-74","ContentsCode":"ArbStyrkProsBefolkn","Tid":"2006M04", "Justering":"S"}
 ...
 ```
 
 ndjson-cli provides a command to filter lines: **ndjson-filter**. We only need to provide the JavaScript filter condition that must be applied to each line. In our example, each line is an object that can be accessed in **ndjson-filter** as *d*.
 
-Because we don't want to keep lines that have missing values for *ArbstyrkP1*, we will filter:
+Because we don't want to keep lines that have missing values, we will filter:
 
 ```js
 d['0']!==null
@@ -479,12 +480,16 @@ json2csv < no-ratio.json > no.csv
 
 ```
 time,ratio
-2006M02,0.9026666666666667
-2006M03,0.90520694259012
-2006M04,0.90520694259012
-2006M05,0.9067909454061251
-2006M06,0.905710491367862
-2006M07,0.9060846560846562
+2009M01,0.9332460732984292
+2009M02,0.9357798165137616
+2009M03,0.938722294654498
+2009M04,0.9384010484927916
+2009M05,0.9407894736842105
+2009M06,0.9446640316205533
+2009M07,0.9455511288180611
+2009M08,0.9454787234042552
+2009M09,0.9476510067114093
+2009M10,0.946524064171123
 ...
 ```
 
@@ -493,7 +498,7 @@ time,ratio
 In a single line:
 
 ```
-curl "http://data.ssb.no/api/v0/dataset/1054.json?lang=en" | jsonstatdice -f ContentsCode=ArbstyrkP1,Alder=15-74 -t | jsonstat2arrobj -b Kjonn -c -t | ndjson-split | ndjson-filter "d['0']!==null" | ndjson-map "{time: d.Tid, ratio: d['2']/d['1']}" | ndjson-reduce | json2csv > no.csv
+curl "https://data.ssb.no/api/v0/dataset/1054.json?lang=en" | jsonstatdice -f ContentsCode=ArbStyrkProsBefolkn,Alder=15-74,Justering=S -t | jsonstat2arrobj -b Kjonn -t | ndjson-split | ndjson-filter "d['0']!==null" | ndjson-map "{time: d.Tid, ratio: d['2']/d['1']}" | ndjson-reduce | json2csv > no.csv
 ```
 
 #### 8. Data visualization
@@ -510,9 +515,9 @@ To draw a time series in a line chart, Visual expects that we provide two separa
 
 ```
 [
-  0.9026666666666667,
-  0.90520694259012,
-  0.90520694259012,
+  2009M01,0.9332460732984292,
+  2009M02,0.9357798165137616,
+  0.938722294654498,
   ...
 ]
 ```
@@ -521,9 +526,9 @@ and a **time array**
 
 ```
 [
-  "200602",
-  "200603",
-  "200604",
+  2009M01,
+  2009M02,
+  2009M03,
   ...
 ]
 ```
@@ -544,18 +549,18 @@ ndjson-map "d.ratio" < no-ratio.ndjson | ndjson-reduce > data.json
 
 #### 8. A final warning
 
-Of course, this example was designed for demo purposes: do not retrieve a ready-made dataset with more than 18,000 values when you only care about less than 300! There is a better way! At least, in Norway: build your own customized dataset from table 08931 selecting *ArbstyrkP1* as the only concept (male, female, no age groups).
+Of course, this example was designed for demo purposes: do not retrieve a ready-made dataset with more than 18,000 values when you only care about less than 200! There is a better way! At least, in Norway: build your own customized dataset from table 08931 selecting *ArbStyrkProsBefolkn* as the only concept and *S* as the type of adjustment (male, female, no age groups).
 
 Like this:
 
 ```
-curl -X POST -d '{ "query": [ { "code": "Kjonn", "selection": { "filter": "item", "values": [ "1", "2" ] } }, { "code": "ContentsCode", "selection": { "filter": "item", "values": [ "ArbstyrkP1" ] } } ], "response": { "format": "json-stat" } }' http://data.ssb.no/api/v0/en/table/08931 | jsonstat2arrobj -b Kjonn -c -t | ndjson-split | ndjson-filter "d['1']!==null" | ndjson-map "{time: d.Tid, ratio: d['2']/d['1']}" | ndjson-reduce | json2csv > no.csv
+curl -X POST -d '{ "query": [ { "code": "Kjonn", "selection": { "filter": "item", "values": [ "1", "2" ] } }, { "code": "ContentsCode", "selection": { "filter": "item", "values": [ "ArbstyrkP1" ] } } ], "response": { "format": "json-stat2" } }' https://data.ssb.no/api/v0/en/table/08931 | jsonstat2arrobj -b Kjonn -c -t | ndjson-split | ndjson-filter "d['1']!==null" | ndjson-map "{time: d.Tid, ratio: d['2']/d['1']}" | ndjson-reduce | json2csv > no.csv
 ```
 
 On Windows use this version instead:
 
 ```
-curl -X POST -d "{ \"query\": [ { \"code\": \"Kjonn\", \"selection\": { \"filter\": \"item\", \"values\": [ \"1\", \"2\" ] } }, { \"code\": \"ContentsCode\", \"selection\": { \"filter\": \"item\", \"values\": [ \"ArbstyrkP1\" ] } } ], \"response\": { \"format\": \"json-stat\" } }" http://data.ssb.no/api/v0/en/table/08931 | jsonstat2arrobj -b Kjonn -c -t | ndjson-split | ndjson-filter "d['1']!==null" | ndjson-map "{time: d.Tid, ratio: d['2']/d['1']}" | ndjson-reduce | json2csv > no.csv
+curl -X POST -d "{ \"query\": [ { \"code\": \"Kjonn\", \"selection\": { \"filter\": \"item\", \"values\": [ \"1\", \"2\" ] } }, { \"code\": \"ContentsCode\", \"selection\": { \"filter\": \"item\", \"values\": [ \"ArbstyrkP1\" ] } } ], \"response\": { \"format\": \"json-stat2\" } }" https://data.ssb.no/api/v0/en/table/08931 | jsonstat2arrobj -b Kjonn -c -t | ndjson-split | ndjson-filter "d['1']!==null" | ndjson-map "{time: d.Tid, ratio: d['2']/d['1']}" | ndjson-reduce | json2csv > no.csv
 ```
 
 ## An Irish Example
