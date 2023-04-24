@@ -577,15 +577,9 @@ You'll need to find the JSON-stat dataset URL on CSO's PxStat. Go to
 
 https://data.cso.ie/
 
-and then
+and then search for "population estimates" and select dataset PE01.
 
-```
-Population Estimates
-  > Annual Population Estimates
-    > PEA01 - Population Estimates (Persons in April)
-```
-
-[Dataset PEA01](https://data.cso.ie/table/PEA01) from CSO provides a yearly time series of population by sex and age group. It is available in the JSON-stat format at:
+[Dataset PEA01](https://data.cso.ie/table/PEA01) from CSO provides a yearly time series of population by sex and age group. It is available in the JSON-stat format (expand **API Data Query** and then go to the **RESTful** tab) at:
 
 https://ws.cso.ie/public/api.restful/PxStat.Data.Cube_API.ReadDataset/PEA01/JSON-stat/2.0/en
 
@@ -626,10 +620,10 @@ jsonstatdice < ie.jsonstat > ie-drop.jsonstat --filter C02076V02508=-/320/575/20
 
 The only difference between the previous two lines is that in the stream interface *ie-drop.jsonstat* will be written even though it already exists while in the non-stream interface a new filename is used to avoid losing the content of an existing file.
 
-Because we are only interested in data for the latest year (2020 at the time of writing), we need to apply a new filter and only keep category *2020* in dimension *TLIST(A1)*:
+Because we are only interested in data for the latest year (2022 at the time of writing), we need to apply a new filter and only keep category *2022* in dimension *TLIST(A1)*:
 
 ```
-jsonstatdice < ie-drop.jsonstat > ie-filtered.jsonstat -filter "TLIST(A1)"=2020 --stream
+jsonstatdice < ie-drop.jsonstat > ie-filtered.jsonstat --filter "TLIST(A1)"=2022 --stream
 ```
 
 #### 3. Convert JSON-stat to a more popular JSON data structure
@@ -684,12 +678,25 @@ We've ended up with a CSV that looks like this:
 
 ```
 Age,Male,Female
-Under 1 year,-29.9,28.4
-1 - 4 years,-128.3,122.9
-5 - 9 years,-176.3,167.8
-10 - 14 years,-179.4,170.6
-15 - 19 years,-164.7,159.3
-...
+Under 1 year,-31.3,29.7
+1 - 4 years,-122.9,117.8
+5 - 9 years,-170.6,162.3
+10 - 14 years,-187.2,179.1
+15 - 19 years,-169.5,163
+20 - 24 years,-161.2,157.6
+25 - 29 years,-150.7,148.9
+30 - 34 years,-156.2,162.1
+35 - 39 years,-175.8,193.5
+40 - 44 years,-200,212.9
+45 - 49 years,-182.5,188.8
+50 - 54 years,-164.9,167.7
+55 - 59 years,-148.6,154
+60 - 64 years,-133.8,138.6
+65 - 69 years,-116.1,119.6
+70 - 74 years,-97,101.4
+75 - 79 years,-72.4,79.1
+80 - 84 years,-42.7,51.7
+85 years and over,-34.1,54.8
 ```
 
 #### 6. Altogether now
@@ -697,7 +704,7 @@ Under 1 year,-29.9,28.4
 In a single line:
 
 ```
-curl https://ws.cso.ie/public/api.restful/PxStat.Data.Cube_API.ReadDataset/PEA01/JSON-stat/2.0/en | jsonstatdice -f C02076V02508=-/320/575/205/215/310/420/505,C02199V02655=- -d -t | jsonstatdice -f "TLIST(A1)"=2020 -t | jsonstat2arrobj -d STATISTIC -b C02199V02655 -l -t | ndjson-split | ndjson-map "{ Age: d['C02076V02508'], Sex: d['C02199V02655'], Male: -1*d.Male, Female: d.Female }" | json2csv -n > ie.csv
+curl https://ws.cso.ie/public/api.restful/PxStat.Data.Cube_API.ReadDataset/PEA01/JSON-stat/2.0/en | jsonstatdice -f C02076V02508=-/320/575/205/215/310/420/505,C02199V02655=- -d -t | jsonstatdice -f "TLIST(A1)"=2022 -t | jsonstat2arrobj -d STATISTIC -b C02199V02655 -l -t | ndjson-split | ndjson-map "{ Age: d['C02076V02508'], Sex: d['C02199V02655'], Male: -1*d.Male, Female: d.Female }" | json2csv -n > ie.csv
 ```
 
 #### 7. Data visualization
@@ -712,7 +719,7 @@ According to the [World Happiness Report 2016 Update](http://worldhappiness.repo
 
 ![Sample spreadsheet](https://raw.githubusercontent.com/wiki/badosa/JSON-stat-conv/denmark.png)
 
-In this example we will use the tools also shown in the previous ones ([jsonstat-conv](https://npmjs.com/package/jsonstat-conv), [ndjson-cli](https://npmjs.com/package/ndjson-cli)) but we will add a new one to the formula: [ndjson-format](https://www.npmjs.com/package/ndjson-format), a module that allows you to format NDJSON using a [ES2015 template literals](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals).
+In this example we will use the tools also shown in the previous ones ([jsonstat-conv](https://npmjs.com/package/jsonstat-conv), [ndjson-cli](https://npmjs.com/package/ndjson-cli)) but we will add a new one to the formula: [ndjson-format](https://www.npmjs.com/package/ndjson-format), a module that allows you to format NDJSON using [ES2015 template literals](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals).
 
 ```
 npm install -g ndjson-format
@@ -724,16 +731,16 @@ npm install -g ndjson-format
 
 Dataset [LIVO1](https://api.statbank.dk/v1/tableinfo/LIVO1?lang=en) available in the [Statistics Denmark API](https://www.dst.dk/en/Statistik/statistikbanken/api) has exactly the information we need. At the time of writing, this dataset contained a time series from 2008 to 2018. To simplify the analysis we will compare 2017 with 2010 (the latest year available has missing values and so do the first years). The customized JSON-stat dataset we will use is:
 
-[https://api.statbank.dk/v1/data/LIVO1/JSONSTAT?lang=en&Tid=2010%2C2017&AKTP=*](https://api.statbank.dk/v1/data/LIVO1/JSONSTAT?lang=en&Tid=2010%2C2017&AKTP=*)
+https://api.statbank.dk/v1/data/LIVO1/JSONSTAT?lang=en&Tid=2010%2C2017&AKTP=*
 
 You can view the contents of the dataset at
 
-[https://jsonstat.com/explorer/#/https%3A%2F%2Fapi.statbank.dk%2Fv1%2Fdata%2FLIVO1%2FJSONSTAT%3Flang%3Den%26Tid%3D2010%252C2017%26AKTP%3D*](https://jsonstat.com/explorer/#/https%3A%2F%2Fapi.statbank.dk%2Fv1%2Fdata%2FLIVO1%2FJSONSTAT%3Flang%3Den%26Tid%3D2010%252C2017%26AKTP%3D*)
+https://jsonstat.com/explorer/#/https%3A%2F%2Fapi.statbank.dk%2Fv1%2Fdata%2FLIVO1%2FJSONSTAT%3Flang%3Den%26Tid%3D2010%252C2017%26AKTP%3D*
 
 To download the dataset from the command line, run [cURL](https://curl.haxx.se/dlwiz/?type=bin):
 
 ```
-curl "https://api.statbank.dk/v1/data/LIVO1/JSONSTAT?lang=en&Tid=2010%2C2018&AKTP=*" -o dk.jsonstat
+curl "https://api.statbank.dk/v1/data/LIVO1/JSONSTAT?lang=en&Tid=2010%2C2017&AKTP=*" -o dk.jsonstat
 ```
 
 #### 2. Convert JSON-stat to a more popular JSON data structure
