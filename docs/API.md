@@ -380,7 +380,7 @@ jsonstat2csv oecd.json oecd.tsv --column "\t" --decimal ","
 
 String. Dimension ID. When a valid dimension ID is provided, the resulting CSV is transposed by that dimension and the value column is replaced by as many columns as categories in the specified dimension.
 
-When this option is set with a valid ID, **--status**, **--vlabel** and **--slabel** are ignored. When **--rich** is set or an invalid ID is specified, **--by** is ignored.
+When this option is set with a valid ID, **--status**, **--vlabel**, **--slabel** and **--big** are ignored. When **--rich** is set or an invalid ID is specified, **--by** is ignored.
 
 #### --drop (-p)
 
@@ -404,7 +404,7 @@ jsonstat2csv oecd.json oecd.jsv --rich
 
 Boolean. Trying to convert a very big dataset into a CSV can produce several errors. The default Node.js memory can be insufficient (Node.js *max-old-space-size* will need to be increased). But even with enough memory, an *Invalid string length* error could stop the execution of **jsonstat2csv**. To avoid this, use the **--big** option.
 
-This option will be ignored if the stream interface is enabled (**--stream**).
+This option will be ignored if the stream interface is enabled (**--stream**) or a valid **--by** is specified.
 
 ## jsonstat2objarr
 
